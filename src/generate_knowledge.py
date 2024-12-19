@@ -1,3 +1,18 @@
+import pandas as pd
+import re
+import yaml
+import sqlparse
+import os
+import pandas as pd
+import requests
+from tqdm import tqdm
+from io import StringIO
+tqdm.pandas()
+
+from langchain_openai import ChatOpenAI
+from langchain.schema import HumanMessage
+
+
 def extract_owner_and_repo(github_url):
     try:
         # Remove the base URL and split the rest
@@ -85,6 +100,16 @@ def get_base_url(repo_url):
         return f"https://raw.githubusercontent.com/{owner}/{repo}/main"
     else:
         raise ValueError("URL not valid.")
+
+def move_snapshots_to_models(dbt_project_df, dbt_models_df):
+    snapshots_filter = dbt_project_df['path'].str.contains(r'(snapshots/|^snap)', case=False, regex=True)
+
+    snapshots_rows = dbt_project_df[snapshots_filter]
+    dbt_project_df = dbt_project_df[~snapshots_filter]
+
+    dbt_models_df = pd.concat([dbt_models_df, snapshots_rows], ignore_index=True)
+
+    return dbt_project_df, dbt_models_df
 
 def extract_model_file_content(path, is_online=False, repo_base_url=None):
     try:
