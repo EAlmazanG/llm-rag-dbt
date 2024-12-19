@@ -88,7 +88,7 @@ def select_dbt_project_files(repo_elements):
     repo_df = pd.DataFrame(filtered_elements, columns=["path"])
 
     # Add columns for useful details
-    repo_df["file_name"] = repo_df["path"].apply(lambda x: x.split("/")[-1])
+    repo_df["name"] = repo_df["path"].apply(lambda x: x.split("/")[-1])
     repo_df["extension"] = repo_df["path"].apply(lambda x: "." + x.split(".")[-1])
     return repo_df
 
@@ -571,7 +571,7 @@ def is_test(file_path):
     return "tests/" in file_path or file_name.lower().startswith("test_")
 
 def extract_packages(row):
-    if 'file_name' in row and row['file_name'] == 'packages.yml':
+    if 'name' in row and row['name'] == 'packages.yml':
         try:
             packages_content = yaml.safe_load(row['code'])
             packages = []
@@ -649,7 +649,7 @@ def generate_dbt_config_code_summary(llm, config_content):
     return response.content
 
 def generate_dbt_config_summary(llm, row):
-    if row['file_name'] == 'dbt_project.yml' and pd.notna(row['code']):
+    if row['name'] == 'dbt_project.yml' and pd.notna(row['code']):
         return generate_dbt_config_code_summary(llm, row['code'])
     return row['description']
 
