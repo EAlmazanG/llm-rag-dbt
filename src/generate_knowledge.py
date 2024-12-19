@@ -12,7 +12,6 @@ tqdm.pandas()
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage
 
-
 def extract_owner_and_repo(github_url):
     try:
         # Remove the base URL and split the rest
@@ -461,7 +460,7 @@ def generate_query_description(llm, query, documentation = None):
     response = llm([HumanMessage(content=prompt)])
     return response.content
 
-def generate_model_description(row):
+def generate_model_description(llm, row):
     if pd.notna(row['sql_code']) or pd.notna(row['yml_code']):
         sql_code = row['sql_code'] if pd.notna(row['sql_code']) else ""
         yml_code = row['yml_code'] if pd.notna(row['yml_code']) else ""
@@ -501,7 +500,7 @@ def generate_jinja_code_description(llm, query, documentation = None):
     response = llm([HumanMessage(content=prompt)])
     return response.content
 
-def generate_jinja_description(row):
+def generate_jinja_description(llm, row):
     if row['has_jinja_code']:
         sql_code = row['sql_code'] if pd.notna(row['sql_code']) else ""
         yml_code = row['yml_code'] if pd.notna(row['yml_code']) else ""
@@ -616,7 +615,7 @@ def generate_macro_code_description(llm, query):
     response = llm([HumanMessage(content=prompt)])
     return response.content
 
-def generate_macro_description(row):
+def generate_macro_description(llm, row):
     if row['is_macro']:
         sql_code = row['code'] if pd.notna(row['code']) else ""
         return generate_macro_code_description(llm, sql_code)
@@ -649,7 +648,7 @@ def generate_dbt_config_code_summary(llm, config_content):
     response = llm([HumanMessage(content=prompt)])
     return response.content
 
-def generate_dbt_config_summary(row):
+def generate_dbt_config_summary(llm, row):
     if row['file_name'] == 'dbt_project.yml' and pd.notna(row['code']):
         return generate_dbt_config_code_summary(llm, row['code'])
     return row['description']
@@ -678,7 +677,7 @@ def generate_test_code_description(llm, tests_content):
     response = llm([HumanMessage(content=prompt)])
     return response.content
 
-def generate_tests_description(row):
+def generate_tests_description(llm, row):
     if row['is_test']:
         return generate_test_code_description(llm, row['code'])
     return row['description']
