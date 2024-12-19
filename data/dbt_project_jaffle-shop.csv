@@ -69,15 +69,15 @@ models:
       +materialized: table
 ",False,False,False,,"- Name: jaffle_shop
 - Version: 3.0.0
-- Require dbt Version: >=1.5.0
+- Require dbt version: >=1.5.0
 - Target Path: target
-- Clean Targets: target, dbt_packages
 - Model Paths: models
 - Analysis Paths: analyses
 - Test Paths: data-tests
 - Seed Paths: seeds
 - Macro Paths: macros
 - Snapshot Paths: snapshots
+- Clean Targets: target, dbt_packages
 - Vars: dbt_date:time_zone: America/Los_Angeles
 - Seeds Schema: raw
 - Models Staging Materialized: view
@@ -111,7 +111,7 @@ set default_schema = target.schema %} {# seeds go in a global `raw` schema #}
  {% if node.resource_type == 'seed' %} {{ custom_schema_name | trim }} {# non-specified schemas go to the default target schema #}
  {% elif custom_schema_name is none %} {{ default_schema }} {# specified custom schema names go to the schema name prepended with the the default schema name in prod (as this is an example project we want the schemas clearly labeled) #}
  {% elif target.name == 'prod' %} {{ default_schema }}_{{ custom_schema_name | trim }} {# specified custom schemas go to the default target schema for non-prod targets #}
- {% else %} {{ default_schema }} {% endif %} {% endmacro %}",False,True,False,,"Generates a schema name based on input parameters.  
+ {% else %} {{ default_schema }} {% endif %} {% endmacro %}",False,True,False,,"Generates a schema name based on input conditions:  
 - For seeds, returns a trimmed custom schema name.  
 - If no custom name is provided, defaults to the target schema.  
 - In production, appends the custom name to the default schema.  
