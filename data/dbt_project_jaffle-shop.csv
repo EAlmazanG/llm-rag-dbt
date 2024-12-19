@@ -1,0 +1,144 @@
+path,file_name,extension,code,is_seed,is_macro,is_test,packages,description
+Taskfile.yml,Taskfile.yml,.yml,"version: '3'
+silent: true
+vars:
+  YEARS: 6
+  DB: bigquery
+tasks:
+  venv:
+    cmds:
+    - python3 -m venv .venv
+  install:
+    cmds:
+    - source .venv/bin/activate && python3 -m pip install --upgrade pip --progress-bar
+      off > /dev/null
+    - source .venv/bin/activate && python3 -m pip install -r requirements.txt --progress-bar
+      off > /dev/null
+    - source .venv/bin/activate && python3 -m pip install dbt-core dbt-{{.DB}} > /dev/null
+  gen:
+    cmds:
+    - source .venv/bin/activate && jafgen {{.YEARS}}
+  seed:
+    cmds:
+    - source .venv/bin/activate && dbt seed
+  clean:
+    cmds:
+    - rm -rf jaffle-data
+    - source .venv/bin/activate && python3 -m pip uninstall dbt-core dbt-{{.DB}} -y
+  load:
+    cmds:
+    - task: venv
+    - task: install
+    - task: gen
+    - task: seed
+    - task: clean
+",False,False,False,,
+dbt_project.yml,dbt_project.yml,.yml,"config-version: 2
+name: jaffle_shop
+version: 3.0.0
+require-dbt-version: '>=1.5.0'
+dbt-cloud:
+  project-id: 275557
+profile: default
+model-paths:
+- models
+analysis-paths:
+- analyses
+test-paths:
+- data-tests
+seed-paths:
+- seeds
+macro-paths:
+- macros
+snapshot-paths:
+- snapshots
+target-path: target
+clean-targets:
+- target
+- dbt_packages
+vars:
+  dbt_date:time_zone: America/Los_Angeles
+seeds:
+  jaffle_shop:
+    +schema: raw
+models:
+  jaffle_shop:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+",False,False,False,,"- Name: jaffle_shop
+- Version: 3.0.0
+- Require dbt version: >=1.5.0
+- Project ID (dbt Cloud): 275557
+- Profile: default
+- Model Paths: models/
+- Analysis Paths: analyses/
+- Test Paths: data-tests/
+- Seed Paths: seeds/
+- Macro Paths: macros/
+- Snapshot Paths: snapshots/
+- Target Path: target/
+- Clean Targets: target/, dbt_packages/
+- Vars: dbt_date:time_zone: America/Los_Angeles
+- Seeds Schema: raw
+- Models Staging Materialization: view
+- Models Marts Materialization: table"
+package-lock.yml,package-lock.yml,.yml,"packages:
+- package: dbt-labs/dbt_utils
+  version: 1.1.1
+- package: calogica/dbt_date
+  version: 0.10.0
+- git: https://github.com/dbt-labs/dbt-audit-helper.git
+  revision: 74072850a5bccd90235576d67530c98e3b7437f4
+sha1_hash: da0d5b1d5a48f6504805f6b1d5a0b2f9f233f34c
+",False,False,False,,
+packages.yml,packages.yml,.yml,"packages:
+- package: dbt-labs/dbt_utils
+  version: 1.1.1
+- package: calogica/dbt_date
+  version: 0.10.0
+- git: https://github.com/dbt-labs/dbt-audit-helper.git
+  revision: main
+",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']",
+macros/cents_to_dollars.sql,cents_to_dollars.sql,.sql,"{# A basic example for a project-wide macro to cast a column uniformly #}
+ {% macro cents_to_dollars(column_name) -%} {{ return(adapter.dispatch('cents_to_dollars')(column_name)) }} {%- endmacro %} {% macro default__cents_to_dollars(column_name) -%} ({{ column_name }} / 100)::numeric(16, 2) {%- endmacro %} {% macro postgres__cents_to_dollars(column_name) -%} ({{ column_name }}::numeric(16, 2) / 100) {%- endmacro %} {% macro bigquery__cents_to_dollars(column_name) %} round(cast(({{ column_name }} / 100) as numeric), 2) {% endmacro %} {% macro fabric__cents_to_dollars(column_name) %} cast({{ column_name }} / 100 as numeric(16, 2)) {% endmacro %}",False,True,False,,"Converts a specified column from cents to dollars uniformly across different database adapters. 
+
+- Default implementation: Divides the column by 100 and casts to numeric(16, 2).
+- Postgres: Similar to default but includes explicit casting.
+- BigQuery: Rounds the result after casting.
+- Fabric: Casts the division result to numeric(16, 2)."
+macros/generate_schema_name.sql,generate_schema_name.sql,.sql,"{% macro generate_schema_name(custom_schema_name, node) %} {%
+set default_schema = target.schema %} {# seeds go in a global `raw` schema #}
+ {% if node.resource_type == 'seed' %} {{ custom_schema_name | trim }} {# non-specified schemas go to the default target schema #}
+ {% elif custom_schema_name is none %} {{ default_schema }} {# specified custom schema names go to the schema name prepended with the the default schema name in prod (as this is an example project we want the schemas clearly labeled) #}
+ {% elif target.name == 'prod' %} {{ default_schema }}_{{ custom_schema_name | trim }} {# specified custom schemas go to the default target schema for non-prod targets #}
+ {% else %} {{ default_schema }} {% endif %} {% endmacro %}",False,True,False,,"Generates a schema name based on input conditions:  
+- For seeds, returns a trimmed custom schema name.  
+- If no custom name is provided, defaults to the target schema.  
+- In production, appends the custom name to the default schema.  
+- For non-production, defaults to the target schema."
+jaffle-data/raw_customers.csv,raw_customers.csv,.csv,"                                  id           name
+50a2d1c4-d788-4498-a6f7-dd75d4db588f Stephanie Love
+438005c2-dd1d-48aa-8bfd-7fb06851b5f8  Kristi Keller
+5261268c-aa94-438a-921a-05efc0d414ac Allison Oliver",False,False,False,,
+jaffle-data/raw_items.csv,raw_items.csv,.csv,"                                  id                             order_id     sku
+2e3cb58a-c73c-4216-9d70-66e91bb2ca32 9bed808a-5074-4dfb-b1eb-388e2e60a6da BEV-004
+0d005cee-30f1-4426-a786-833fcc77ae34 b83630c1-0fdc-4cd2-818d-0b6d4384ce86 BEV-004
+0b8661ef-9337-44cd-a12d-f2aa9badda01 3b4a03db-7b23-4673-a88a-7f51b01ca497 BEV-004",False,False,False,,
+jaffle-data/raw_orders.csv,raw_orders.csv,.csv,"                                  id                             customer          ordered_at                             store_id  subtotal  tax_paid  order_total
+9bed808a-5074-4dfb-b1eb-388e2e60a6da 50a2d1c4-d788-4498-a6f7-dd75d4db588f 2016-09-01T15:01:00 4b6c2304-2b9e-41e4-942a-cf11a1819378       700        42          742
+b83630c1-0fdc-4cd2-818d-0b6d4384ce86 438005c2-dd1d-48aa-8bfd-7fb06851b5f8 2016-09-01T10:39:00 4b6c2304-2b9e-41e4-942a-cf11a1819378       700        42          742
+3b4a03db-7b23-4673-a88a-7f51b01ca497 5261268c-aa94-438a-921a-05efc0d414ac 2016-09-01T07:46:00 4b6c2304-2b9e-41e4-942a-cf11a1819378       700        42          742",False,False,False,,
+jaffle-data/raw_products.csv,raw_products.csv,.csv,"    sku                  name   type  price                                                               description
+JAF-001 nutellaphone who dis? jaffle   1100                                                 nutella and banana jaffle
+JAF-002           doctor stew jaffle   1100                                               house-made beef stew jaffle
+JAF-003         the krautback jaffle   1200 lamb and pork bratwurst with house-pickled cabbage sauerkraut and mustard",False,False,False,,
+jaffle-data/raw_stores.csv,raw_stores.csv,.csv,"                                  id         name           opened_at  tax_rate
+4b6c2304-2b9e-41e4-942a-cf11a1819378 Philadelphia 2016-09-01T00:00:00    0.0600
+40e6ddd6-b8f6-4e17-8bd6-5e53966809d2     Brooklyn 2017-03-12T00:00:00    0.0400
+1ce7ac35-d296-4e34-89c4-bf92aa2fe751      Chicago 2018-04-29T00:00:00    0.0625",False,False,False,,
+jaffle-data/raw_supplies.csv,raw_supplies.csv,.csv,"     id                        name  cost  perishable     sku
+SUP-001 compostable cutlery - knife     7       False JAF-001
+SUP-002              cutlery - fork     7       False JAF-001
+SUP-003                serving boat    11       False JAF-001",False,False,False,,
