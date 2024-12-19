@@ -587,6 +587,38 @@ def extract_packages(row):
             return []
     return None
 
+def generate_packages_code_description(llm, packages):
+    # Context and prompt
+    prompt = f"""
+        You are a dbt expert. Your task is to generate a concise and clear description of the installed dbt packages.
+
+        Installed Packages:
+        {packages}
+
+        Guidelines:
+        1. Provide an overview of the purpose and functionality of each package listed.
+        2. Write in a professional tone, avoiding redundancy and technical jargon.
+        3. Focus on the practical use and benefits of each package for dbt projects.
+        4. Limit the description to **70 words** per package, ensuring clarity and relevance.
+        5. If possible, group related packages and highlight their combined purpose.
+
+        Examples:
+        - `dbt_utils`: Provides helper macros to simplify common dbt tasks, such as column selection, testing, and transformations.
+        - `dbt_audit_helper`: Facilitates data quality audits by generating SQL for data validation and testing.
+        - `dbt_date`: Simplifies date-related transformations and calculations for better time series analysis.
+
+        Provide a clear and concise description of the installed packages:
+    """
+
+    # Interact
+    response = llm([HumanMessage(content=prompt)])
+    return response.content
+
+def generate_packages_description(llm, row):
+    if row['packages'] is not None:
+        return generate_packages_code_description(llm, row['packages'])
+    return row['description']
+
 def generate_macro_code_description(llm, query):
     # Context and prompt
     prompt = f"""
