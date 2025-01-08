@@ -11,7 +11,7 @@ interpretation_agent:
   verbose: true
   allow_delegation: false
 
-  evaluation_agent:
+evaluation_agent:
   role: >
     Evaluation Specialist
   goal: >
