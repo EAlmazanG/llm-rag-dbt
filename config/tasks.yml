@@ -1,6 +1,8 @@
 interpretation_task:
   description: >
-    Evaluate the user's request and determine the required action:
+    Evaluate the user's request:
+    {request}
+    and determine the required action:
     - Adding a field: Identify where the field is currently available (if provided),
       determine how to propagate it through necessary models or transformations,
       and assess the impact on related models and dependencies.
