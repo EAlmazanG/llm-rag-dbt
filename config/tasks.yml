@@ -2,31 +2,40 @@ interpretation_task:
   description: >
     Evaluate the user's request:
     {request}
-    and determine the required action:
-    - Adding a field: Identify where the field is currently available (if provided),
-      determine how to propagate it through necessary models or transformations,
-      and assess the impact on related models and dependencies.
-    - Modifying an existing model: Identify specific changes needed, evaluate the
-      impact on structure, relationships, and downstream dependencies.
-    - Retrieving specific information: Identify models containing relevant data,
-      analyze relationships, and determine queries or transformations needed.
-
-    Reflect on the request to generate a concise plan for the approach and provide
-    a clear summary of the required action and its implications.
+    and based on the evaluation, determine the required action:
+    1) adding a field -> return ADD_COLUMN
+    2) modifying an existing model -> return MODIFY_MODEL
+    3) retrieving and returning specific information. -> return RETRIVE_INFO
+    
+    Reflect on the request and provide a concise plan for the approach:
+    - If the action involves adding a field: Identify where the field is currently available, if provided.
+    - Determine how to propagate the field through the necessary models or transformations to integrate it into the target model.
+    - Consider the impact on related models and dependencies.
+    - If the action involves modifying an existing model: Identify the specific changes required.
+    - Assess how these changes affect the structure, relationships, and downstream dependencies of the model.
+    - If the action involves retrieving or returning information: Identify the models containing the relevant data.
+    - Analyze how these models are related, and determine the queries or transformations needed to extract the requested information.
 
   expected_output: >
     Return one of the following actions:
     - ADD_COLUMN
     - MODIFY_MODEL
-    - RETRIVE_INFO
+    - RETRIEVE_INFO
 
-    Additionally, include a short explanation of the work required for the action.
-    The output should be minimal and focused, avoiding extra commentary or filler text.
+    Return the required action from the three proposed, and a short explanation of the required work.
+    REMEMBER: Provide no extra commentary or explanation, just the minimal information required,  
+    return only useful information, no additional filler text or unnecessary explanations, get to the point.
 
 evaluation_task:
   description: >
-    Evaluate the interpretation of the user request and determine the necessary steps to handle it effectively. 
-    Include only relevant considerations based on the following topics:
+    Based on the interpretation of an expert dbt and problem interpreter: 
+    {interpretation}
+
+    of the original request
+    ORIGINAL REQUEST: 
+    {request}
+    
+    Include only these topics if relevant:
     - Target models or files
     - Field existence
     - Documentation needs
@@ -36,18 +45,140 @@ evaluation_task:
     - dbt project config
     - Code or logic generation
     
-    Possible actions and considerations may include:
-    - Identifying the target models or files affected by the request.
-    - Analyzing upstream and downstream dependencies to locate the change points.
-    - Assessing the need for adjustments in documentation, tests, or configuration files.
-    - Evaluating performance impacts and ensuring maintainability.
-    - Generating necessary SQL logic fragments (e.g., CTEs, columns).
-    - Determining if an intermediate model is required for the changes.
-    - Highlighting potential granularity changes or unique key impacts.
+    Summarize only the necessary actions, no filler. Think about all the considerations and steps required to handle this request effectively.
+    Your evaluation could include the following actions:
+    - Identify the target model or models: Analyze the dependency tree to locate the model where the change should occur.
+    - Understand its upstream sources (seeds, sources or base models)
+    - Understand downstream dependencies of the model.
+    - Documentation: Assess if it's going to be necessary to add adjustments to the documentation, and which would be this changes.
+    - Unique keys and IDs: Examine the available unique keys and identifiers in the initial, intermediate, and final models.
+    - Decide how these can be used to integrate the field or establish relationships between models.
+    - Check if the granularity of the model can be altered through the changes added.
+    - Evaluate performance and design: Review the data pipeline from start to finish.
+    - Decide where the change or addition would be most optimal in terms of performance, data modeling, and maintainability.
+    - Project state and impact: Consider the current state of the dbt project and how the changes might affect the broader model chain.
+    - Macros and seeds: Check if relevant macros or seed data exist that can help transform or derive the required field or model.
+    - Tests: Identify existing tests for the field or model and determine whether new tests need to be added or adjusted to validate the changes.
+    - dbt project configuration: Review the general configuration (e.g., variables, environments, conventions) in the dbt_project.yml file to ensure the changes align with project standards and won't disrupt the schema.
+    - Code generation: fragments of SQL logic needed, including CTEs or columns.
+    - Evaluate whether an intermediate model is necessary or if the logic can be handled within the existing pipeline.
+    - Documentation generation: Specify the documentation needed for any fields, models, or logic added or updated as part of this request. Only the things to add or change.
 
   expected_output: >
-    A concise summary of the high-level tasks required to fulfill the request.
-    If additional context (e.g., project structure or lineage) is needed, clearly
-    state this and provide only reflections based on the given information.
+    Provide a concise summary of the high-level tasks based on your analysis, with the reflection of each one of them to be prepared to completed in the next steps when context is provided. If you don't have the info to perform the action because it's necessary context of the project, code or the lineage of the models, don't answer it, in next steps context will be provide as input to answer it properly. Mark it as it's necessart the context to responde it, and only do the reflection part using your logic as dbt expert.
+    No extra checks or steps that are not on this list, select only the needed actions for the request.
+    Return only useful information, no additional filler text or unnecessary explanations, get to the point.
+          
+    REMEMBER: Provide no extra commentary or explanation, just the minimal information required.
 
-    Avoid filler text or unnecessary explanations, and focus exclusively on actionable insights.
+lineage_task:
+  description: >
+    Based on this evaluation:
+    {evaluation}
+    
+    and the retrieved context, remember the meaning of all the context data:
+          
+    RETRIEVED CONTEXT: 
+    {retrieved_context}
+
+    CONTEXT INFO AND METADATA MEANING:
+    - knowledge_type: Specifies whether the resource is about files within the dbt project configuration, or data models used in the pipeline.
+    - name: Name of the file.
+    - path: Path within the repository where the file or resource is located, relative to the project root.
+    - source: The original dataset, from which the model or resource pulls its data. Only for the first layer of the model.
+    - parents: dbt models  that serve as input dependencies for the current model or file.
+    - children: dbt models that depend on this resource as an input for their logic or data processing.
+    - config: Configuration parameters defined in the file, specifying behaviors, sort keys, materialization...
+    - materialized: Indicates how the data model is materialized (e.g., as a table, view, or ephemeral model) in the pipeline.
+    - is_snapshot: Boolean flag that identifies whether the file represents a snapshot dbt model.
+    - model_category: The logical dbt categorization of the model inside the project, such as base, staging, intermediate, marts...
+    - vertical: Business domain or vertical to which the resource belongs, such as e-commerce, finance, supply...
+    - has_tests: Boolean flag indicating if there are tests associated with this resource in the model .yaml file or in the tests folder.
+    - has_select_all_in_last_select: Specifies if the final SQL query in the file uses a SELECT * statement. So all columns of previous CTEs will be consider as output of the model.
+    - has_group_by: Boolean flag indicating if the SQL code includes a GROUP BY clause for aggregating data.
+    - is_filtered: Boolean flag that specifies whether the resource applies filters to its data with WHERE, HAVING, JOIN...
+    - is_source_model: The model uses the source macro to extract the data from the dbt project sources. It belongs to the first layer of all dbt models.
+    - is_seed: Specifies if the resource is a seed file.
+    - is_end_model: Boolean flag identifying if this is a terminal model in the data pipeline, representing the final output.
+    - is_macro: Boolean flag indicating if the file defines a macro, used for reusable logic across the project. It does not count macros ref to call other models or source to connect to sources.
+    - is_test: Indicates whether the file is a test sql definition used for testing purposes of other dbt models.
+    - macros: Name of the macros used in the dbt model if any. It does not count macros ref to call other models or source to connect to sources.
+    - packages: List of external packages or dependencies required for the resource or project functionality. Only not None in the packages.yml	row.
+    Determine:
+    - The primary dbt model directly affected (e.g., where a field is added, a modification is made, or information is requested).
+    - Whether upstream models (UP), downstream models (DOWN), or both (ALL) are necessary to handle this request correctly.
+    
+    Consider the following cases:
+    1. If a new field is added, specify the model where the field will be added and indicate UP for upstream models needed to populate the field.
+    2. If an existing field is modified, specify the model where the change occurs and indicate DOWN for downstream models affected by the change.
+    3. If information is requested, specify the model containing the requested information and indicate UP, DOWN, or ALL based on the context of the data needed.
+    4. If a field or model is removed, specify the model being affected and indicate DOWN for downstream dependencies impacted.
+          
+  expected_output: >
+    Return the following json format: {{'model':model name, 'scope':UP/DOWN/ALL}}
+    REMEMBER: Provide no extra commentary or explanation, just the minimal information required.
+
+plan_task:
+  description: >
+    Based on this evaluation: 
+    {evaluation}
+
+    The analysis of the most impacted model and the part of the lineage that is affected or has related info 
+    (UP = Upstream models(parent models)/DOWN = Downstream models(childen models)/ALL = both): 
+    {lineage_analysis}
+
+    RETRIEVED CONTEXT: 
+    {retrieved_context}
+
+    the retrieved context, remember the meaning of all the context data:
+    CONTEXT INFO AND METADATA MEANING:
+    - knowledge_type: Specifies whether the resource is about files within the dbt project configuration, or data models used in the pipeline.
+    - name: Name of the file.
+    - path: Path within the repository where the file or resource is located, relative to the project root.
+    - source: The original dataset, from which the model or resource pulls its data. Only for the first layer of the model.
+    - parents: dbt models  that serve as input dependencies for the current model or file.
+    - children: dbt models that depend on this resource as an input for their logic or data processing.
+    - config: Configuration parameters defined in the file, specifying behaviors, sort keys, materialization...
+    - materialized: Indicates how the data model is materialized (e.g., as a table, view, or ephemeral model) in the pipeline.
+    - is_snapshot: Boolean flag that identifies whether the file represents a snapshot dbt model.
+    - model_category: The logical dbt categorization of the model inside the project, such as base, staging, intermediate, marts...
+    - vertical: Business domain or vertical to which the resource belongs, such as e-commerce, finance, supply...
+    - has_tests: Boolean flag indicating if there are tests associated with this resource in the model .yaml file or in the tests folder.
+    - has_select_all_in_last_select: Specifies if the final SQL query in the file uses a SELECT * statement. So all columns of previous CTEs will be consider as output of the model.
+    - has_group_by: Boolean flag indicating if the SQL code includes a GROUP BY clause for aggregating data.
+    - is_filtered: Boolean flag that specifies whether the resource applies filters to its data with WHERE, HAVING, JOIN...
+    - is_source_model: The model uses the source macro to extract the data from the dbt project sources. It belongs to the first layer of all dbt models.
+    - is_seed: Specifies if the resource is a seed file.
+    - is_end_model: Boolean flag identifying if this is a terminal model in the data pipeline, representing the final output.
+    - is_macro: Boolean flag indicating if the file defines a macro, used for reusable logic across the project. It does not count macros ref to call other models or source to connect to sources.
+    - is_test: Indicates whether the file is a test sql definition used for testing purposes of other dbt models.
+    - macros: Name of the macros used in the dbt model if any. It does not count macros ref to call other models or source to connect to sources.
+    - packages: List of external packages or dependencies required for the resource or project functionality. Only not None in the packages.yml	row.
+
+    and the examples about the some of the sources and the seeds (if any):
+    {retrieved_csv_sources_context}
+
+    Create a detailed step-by-step plan of the changes required in the existing models or files within the repository.
+    To implement the requested change accurately.
+    1. Ensure that you only refer to files, models, or fields that are explicitly mentioned in the retrieved information.
+    2. Do not invent new models, fields, or dependencies. 
+    3. Focus on:
+      - Identifying the exact files or models that need modifications, based on the retrieved context.
+      - Specifying what changes should be made, such as adding fields, updating logic, or modifying relationships.
+      - Highlighting any dependencies between models or files and describing how these should be handled.
+      - Extract children or parent models affected.
+      - If code fragments are provided in the retrieved context, incorporate them where applicable and explain their role.
+      - If no specific code or file is mentioned in the retrieved information, state that no changes should be made to existing files.
+      - Ensure the changes align with the dbt project's standards, such as conventions in `dbt_project.yml`, and do not introduce schema-breaking modifications.
+    
+    4. No extra checks or steps that are not on this list.
+    5. Provide precise and actionable recommendations, avoiding any assumptions beyond the retrieved information.
+          
+  expected_output: >
+    Return a summary of all the process, with the reflection, plan and context and the changes tht are neeeded to perfor
+          - The original request.
+          - The interpretarion of the request.
+          - The affected models with the info of the context and the lineage.
+          - All the necceasry changes step by step with a clear and short explanaiton of why is needed.
+    Return only useful information, no additional filler text or unnecessary explanations, get to the point.
+    REMEMBER: Provide no extra commentary or explanation, just the minimal information required.
