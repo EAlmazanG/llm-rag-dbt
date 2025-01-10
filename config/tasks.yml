@@ -73,14 +73,16 @@ evaluation_task:
 
 lineage_task:
   description: >
-    Based on this evaluation:
+    Based on this user request:
+    {request}
+
+    , dbt expert evaluation of the request:
     {evaluation}
     
-    and the retrieved context, remember the meaning of all the context data:
-          
-    RETRIEVED CONTEXT: 
+    and the retrieved context about the request, 
     {retrieved_context}
-
+    
+    (remember the meaning of all the context data:
     CONTEXT INFO AND METADATA MEANING:
     - knowledge_type: Specifies whether the resource is about files within the dbt project configuration, or data models used in the pipeline.
     - name: Name of the file.
@@ -104,7 +106,9 @@ lineage_task:
     - is_test: Indicates whether the file is a test sql definition used for testing purposes of other dbt models.
     - macros: Name of the macros used in the dbt model if any. It does not count macros ref to call other models or source to connect to sources.
     - packages: List of external packages or dependencies required for the resource or project functionality. Only not None in the packages.yml	row.
-    Determine:
+    )
+    
+    DETERMINE:
     - The primary dbt model directly affected (e.g., where a field is added, a modification is made, or information is requested).
     - Whether upstream models (UP), downstream models (DOWN), or both (ALL) are necessary to handle this request correctly.
     
