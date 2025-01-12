@@ -32,7 +32,6 @@ evaluation_task:
     {interpretation}
 
     of the original request
-    ORIGINAL REQUEST: 
     {request}
     
     Include only these topics if relevant:
@@ -76,7 +75,7 @@ lineage_task:
     Based on this user request:
     {request}
 
-    , dbt expert evaluation of the request:
+    , the dbt expert evaluation of the request:
     {evaluation}
     
     and the retrieved context about the request, 
