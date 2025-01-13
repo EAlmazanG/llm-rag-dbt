@@ -126,6 +126,9 @@ plan_task:
     Based on this evaluation: 
     {evaluation}
 
+    of the user_request:
+    {request}
+
     The analysis of the most impacted model and the part of the lineage that is affected or has related info 
     (UP = Upstream models(parent models)/DOWN = Downstream models(childen models)/ALL = both): 
     {lineage_analysis}
