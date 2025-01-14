@@ -188,3 +188,34 @@ plan_task:
           - All the necceasry changes step by step with a clear and short explanaiton of why is needed.
     Return only useful information, no additional filler text or unnecessary explanations, get to the point.
     REMEMBER: Provide no extra commentary or explanation, just the minimal information required.
+
+check_model_task:
+  description: > 
+    Verify if the request explicitly mentions a model that requires information retrieval or changes.
+  expected_output: > 
+    A status indicating whether a model was detected ("detected" or "not detected") and the identified model name if applicable.
+
+search_model_task:
+  description: > 
+    Locate the model most relevant to the user's request by analyzing lineage and matching the context.
+  expected_output: > 
+    The name of the identified model and a brief summary of why it matches the request.
+
+extract_info_task:
+  description: > 
+    Retrieve all relevant technical and contextual information about the identified model, including dependencies, structure, and other details.
+  expected_output: > 
+    A detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
+
+select_output_task:
+  description: > 
+    Analyze the request to determine whether it requires informational output or changes and process the extracted information accordingly.
+  expected_output: > 
+    If informational: a formatted response with all relevant details.  
+    If changes are required: structured data ready for the solution design phase.
+
+solution_design_task:
+  description: > 
+    Identify the primary model to modify and determine any secondary models affected by the requested changes, outlining the necessary updates for each.
+  expected_output: > 
+    A plan specifying the primary model for changes, the impacted secondary models, and the required updates for each model.

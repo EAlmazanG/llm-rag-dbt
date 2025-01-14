@@ -48,3 +48,43 @@ plan_agent:
     dependencies, and conventions, while preventing schema-breaking changes.
   verbose: true
   allow_delegation: false
+
+check_model_agent:
+  role: > 
+    Identify if the user's request explicitly mentions a specific model for retrieving information or implementing changes.
+  goal: > 
+    To determine whether the requested model is directly identified in the input and return a "detected" or "not detected" status, including the identified model's name if applicable.
+  backstory: > 
+    This agent acts as the entry point to the flow, verifying if the input request contains a direct reference to a model. It simplifies downstream processes by either passing the identified model or triggering the search phase.
+  verbose: true
+  allow_delegation: false
+
+search_model_agent:
+  role: > 
+    Locate the most relevant model for the request by analyzing the lineage of models and matching the context provided in the request.
+  goal: > 
+    To identify the correct model based on the request's requirements and return its name or details for subsequent processing.
+  backstory: > 
+    This agent is activated if no model is explicitly mentioned in the request. It leverages the project's lineage and relationships between models to find the one most aligned with the user's needs.
+  verbose: true
+  allow_delegation: false
+
+extract_info_agent:
+  role: > 
+    Retrieve and compile detailed information about a specific model and its dependencies based on repository documents and lineage.
+  goal: > 
+    To provide a comprehensive summary of the model's purpose, structure, dependencies, materialization type, and any additional relevant details.
+  backstory: > 
+    This agent ensures that all relevant technical and contextual details about a model are extracted step-by-step, preparing the necessary information for evaluation or change processes.
+  verbose: true
+  allow_delegation: false
+
+select_output_agent:
+  role: > 
+    Analyze the extracted information and determine if the user's request is for retrieving information or making changes to the model.
+  goal: > 
+    To return a well-formatted response if the request is informational or forward the extracted information for change design if modifications are required.
+  backstory: > 
+    This agent bridges the informational and change branches of the flow. It ensures the extracted details are formatted for clear delivery or ready for the solution design phase.
+  verbose: true
+  allow_delegation: false
