@@ -81,6 +81,16 @@ extract_info_agent:
 
 select_output_agent:
   role: > 
+    Retrieve and compile detailed information about a specific model and its dependencies based on repository documents and lineage.
+  goal: > 
+    To provide a comprehensive summary of the model's purpose, structure, dependencies, materialization type, and any additional relevant details.
+  backstory: > 
+    This agent ensures that all relevant technical and contextual details about a model are extracted step-by-step, preparing the necessary information for evaluation or change processes.
+  verbose: true
+  allow_delegation: false
+
+solution_design_agent:
+  role: > 
     Analyze the extracted information and determine if the user's request is for retrieving information or making changes to the model.
   goal: > 
     To return a well-formatted response if the request is informational or forward the extracted information for change design if modifications are required.
