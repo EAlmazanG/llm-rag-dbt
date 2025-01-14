@@ -197,7 +197,7 @@ check_model_task:
     Current lineage of the dbt project:
     {lineage}
   expected_output: > 
-    A status indicating whether a model was detected ("detected" or "not detected") and the identified model name if applicable.
+    A dict with the status indicating whether a model was detected ("DETECTED" or "NOT DETECTED") and the identified model name if applicable. The identified model must be one of the models of the dbt lineage.
     
 search_model_task:
   description: > 
