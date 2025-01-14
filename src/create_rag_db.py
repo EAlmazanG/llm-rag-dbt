@@ -135,7 +135,7 @@ def create_documents_from_df(df):
     ).tolist()
     return documents
 
-def plot_dbt_lineage(dbt_repo_knowledge_df, verbose = False):
+def calculate_dbt_lineage(dbt_repo_knowledge_df, verbose = False):
     # Generate lineage df
     lineage_df = dbt_repo_knowledge_df[(dbt_repo_knowledge_df['knowledge_type'] == 'models') & (dbt_repo_knowledge_df['extension'] == '.sql')][['name','parent_models','children_models','source']]
     lineage_df['model_name'] = lineage_df['name'].apply(lambda x: x[:-4])
@@ -146,56 +146,56 @@ def plot_dbt_lineage(dbt_repo_knowledge_df, verbose = False):
     lineage_df["parent_models"] = lineage_df["parent_models"].apply(lambda x: x if isinstance(x, list) else eval(x) if isinstance(x, str) and x.startswith('[') else [])
     lineage_df["children_models"] = lineage_df["children_models"].apply(lambda x: x if isinstance(x, list) else eval(x) if isinstance(x, str) and x.startswith('[') else [])
 
-    # Create directed graph
-    G = nx.DiGraph()
-
-    # Add source nodes
-    all_sources = lineage_df["source"].sum()
-    unique_sources = list(set(all_sources))
-    G.add_nodes_from(unique_sources, layer=0)
-
-    # Add nodes and edges for models
-    for _, row in lineage_df.iterrows():
-        layer = 1 if row["source"] and not row["parent_models"] else 2 if row["source"] and row["parent_models"] else 3 if not row["source"] and row["parent_models"] and row["children_models"] else 4 if not row["children_models"] and row["parent_models"] else None
-        if layer:
-            G.add_node(row["model_name"], layer=layer)
-            for source in row["source"]:
-                G.add_edge(source, row["model_name"])
-            for parent in row["parent_models"]:
-                G.add_edge(parent, row["model_name"])
-            for child in row["children_models"]:
-                G.add_edge(row["model_name"], child)
-
-    # Assign colors based on model type
-    def get_color(node):
-        if node in unique_sources:
-            return "lightgreen"
-        elif G.out_degree(node) == 0:
-            return "lightcoral"
-        elif node.startswith("stg"):
-            return "lightblue"
-        elif node.startswith("base"):
-            return "orange"
-        elif node.startswith("int"):
-            return "pink"
-        return "gray"
-
-    node_colors = [get_color(n) for n in G.nodes]
-
-    # Layout to minimize edge crossings
-    pos = nx.multipartite_layout(G, subset_key="layer")
-
-    # Draw graph with rectangular nodes
-    plt.figure(figsize=(16, 10))
-    nx.draw(
-        G, pos, with_labels=True, node_size=3000, font_size=10, font_weight="bold",
-        arrowsize=20, node_color=node_colors, edgecolors="black",
-    )
-    ax = plt.gca()
-    for node, (x, y) in pos.items():
-        ax.text(x, y, node, fontsize=10, ha="center", va="center",
-                bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor=get_color(node)))
     if verbose:
+        # Create directed graph
+        G = nx.DiGraph()
+
+        # Add source nodes
+        all_sources = lineage_df["source"].sum()
+        unique_sources = list(set(all_sources))
+        G.add_nodes_from(unique_sources, layer=0)
+
+        # Add nodes and edges for models
+        for _, row in lineage_df.iterrows():
+            layer = 1 if row["source"] and not row["parent_models"] else 2 if row["source"] and row["parent_models"] else 3 if not row["source"] and row["parent_models"] and row["children_models"] else 4 if not row["children_models"] and row["parent_models"] else None
+            if layer:
+                G.add_node(row["model_name"], layer=layer)
+                for source in row["source"]:
+                    G.add_edge(source, row["model_name"])
+                for parent in row["parent_models"]:
+                    G.add_edge(parent, row["model_name"])
+                for child in row["children_models"]:
+                    G.add_edge(row["model_name"], child)
+
+        # Assign colors based on model type
+        def get_color(node):
+            if node in unique_sources:
+                return "lightgreen"
+            elif G.out_degree(node) == 0:
+                return "lightcoral"
+            elif node.startswith("stg"):
+                return "lightblue"
+            elif node.startswith("base"):
+                return "orange"
+            elif node.startswith("int"):
+                return "pink"
+            return "gray"
+
+        node_colors = [get_color(n) for n in G.nodes]
+
+        # Layout to minimize edge crossings
+        pos = nx.multipartite_layout(G, subset_key="layer")
+
+        # Draw graph with rectangular nodes
+        plt.figure(figsize=(16, 10))
+        nx.draw(
+            G, pos, with_labels=True, node_size=3000, font_size=10, font_weight="bold",
+            arrowsize=20, node_color=node_colors, edgecolors="black",
+        )
+        ax = plt.gca()
+        for node, (x, y) in pos.items():
+            ax.text(x, y, node, fontsize=10, ha="center", va="center",
+                    bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor=get_color(node)))
         plt.title("DBT Models Lineage", fontsize=16)
         plt.show()
     return lineage_df
