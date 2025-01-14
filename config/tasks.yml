@@ -201,7 +201,15 @@ check_model_task:
     
 search_model_task:
   description: > 
-    Locate the model most relevant to the user's request by analyzing lineage and matching the context.
+    Locate the models most relevant to the user's request by analyzing lineage and matching the context.
+    User request:
+    {request}
+    Main impacted models names:
+    {impacted_models}
+    Main impacted models details and code:
+    {impacted_models_documents}
+    Lineage of the impacted models:
+    {lineage}
   expected_output: > 
     The name of the identified model and a brief summary of why it matches the request.
 
