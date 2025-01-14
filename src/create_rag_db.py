@@ -135,7 +135,7 @@ def create_documents_from_df(df):
     ).tolist()
     return documents
 
-def plot_dbt_lineage(dbt_repo_knowledge_df):
+def plot_dbt_lineage(dbt_repo_knowledge_df, verbose = False):
     # Generate lineage df
     lineage_df = dbt_repo_knowledge_df[(dbt_repo_knowledge_df['knowledge_type'] == 'models') & (dbt_repo_knowledge_df['extension'] == '.sql')][['name','parent_models','children_models','source']]
     lineage_df['model_name'] = lineage_df['name'].apply(lambda x: x[:-4])
@@ -195,7 +195,7 @@ def plot_dbt_lineage(dbt_repo_knowledge_df):
     for node, (x, y) in pos.items():
         ax.text(x, y, node, fontsize=10, ha="center", va="center",
                 bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor=get_color(node)))
-
-    plt.title("DBT Models Lineage", fontsize=16)
-    plt.show()
+    if verbose:
+        plt.title("DBT Models Lineage", fontsize=16)
+        plt.show()
     return lineage_df
