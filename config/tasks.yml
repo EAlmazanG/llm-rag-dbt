@@ -194,10 +194,10 @@ check_model_task:
     Verify if the request explicitly mentions a model that requires information retrieval or changes.
     Request:
     {request}
-    Current lineage of the dbt project:
+    Current dbt lineage of the dbt project:
     {lineage}
   expected_output: > 
-    A dict with the status indicating whether a model was detected ("DETECTED" or "NOT DETECTED") and the identified model name if applicable. The identified model must be one of the models of the dbt lineage.
+    A dict with "status", indicating whether a model was detected ("DETECTED" or "NOT DETECTED") and "identified_model" if applicable. The identified model must be ALWAYS one of the models of the dbt lineage.
     
 search_model_task:
   description: > 
