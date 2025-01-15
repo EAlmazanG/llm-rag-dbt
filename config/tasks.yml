@@ -22,9 +22,8 @@ interpretation_task:
     - MODIFY_MODEL
     - RETRIEVE_INFO
 
-    Return the required action from the three proposed, and a short explanation of the required work.
+    Return the required action from the three proposed.
     REMEMBER: Provide no extra commentary or explanation, just the minimal information required,  
-    return only useful information, no additional filler text or unnecessary explanations, get to the point.
 
 evaluation_task:
   description: >
