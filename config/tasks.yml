@@ -227,6 +227,66 @@ generate_info_report_task:
     Don't create new information that is not available in the one that you have available, if the info does not exist, dont put it in the report.
     Only if needed, generate a detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
 
+
+search_involved_models_task:
+  description: > 
+    Analyze the provided dbt lineage and identify all additional models (upstream and downstream) that need changes to maintain consistency when modifications are made to the primary model. This includes:
+      - Ensuring added fields propagate downstream to all dependent models.
+      - Identifying and addressing missing fields in upstream models required by downstream models.
+      - Ensuring removed fields are also deleted from all dependent models.
+    Inputs:
+      - Request, Original user request: 
+        {request}
+      - Identified model, The primary model where changes are requested: 
+        {identified_model}
+      - Model info, Information about impacted models from previous tasks: 
+        {search_impacted_models_ouput}
+      - Lineage, The complete lineage DataFrame of the dbt project: 
+        {lineage_df}    
+  expected_output: > 
+    {
+      "upstream_models": [
+        {
+          "model_name": "<Model name>",
+          "required_changes": ["<List of fields to add/remove>"]
+        }
+      ],
+      "downstream_models": [
+        {
+          "model_name": "<Model name>",
+          "required_changes": ["<List of fields to add/remove>"]
+        }
+      ],
+      "primary_model": {
+        "model_name": "<Primary model>",
+        "required_changes": ["<List of requested changes>"]
+      }
+    }
+
+    Example Output:
+    {
+      "upstream_models": [
+        {
+          "model_name": "stg_customers.sql",
+          "required_changes": ["Add 'customer_region"]
+        }
+      ],
+      "downstream_models": [
+        {
+          "model_name": "dim_customers.sql",
+          "required_changes": ["Propagate 'customer_region'", "Remove 'customer_age'"]
+        },
+        {
+          "model_name": "fact_orders.sql",
+          "required_changes": ["Remove 'customer_age'"]
+        }
+      ],
+      "primary_model": {
+        "model_name": "dim_customers.sql",
+        "required_changes": ["Add 'customer_region'", "Remove 'customer_age'"]
+      }
+    }
+
 solution_design_task:
   description: > 
     Identify the primary model to modify and determine any secondary models affected by the requested changes, outlining the necessary updates for each.

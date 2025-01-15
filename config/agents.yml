@@ -79,6 +79,20 @@ generate_info_report_agent:
   verbose: true
   allow_delegation: false
 
+search_involved_models_agent:
+  role: > 
+    Analyze the dbt project lineage and identify all models (upstream and downstream) that require changes to ensure the consistency and functionality of the data pipeline when requested modifications are made to a primary model.
+  goal: > 
+    To determine the complete list of models impacted by the requested changes, including:
+      - Downstream models where changes need to propagate (e.g., adding/removing fields).
+      - Upstream models where required fields are missing and need to be added.
+    Ensure that the list of involved models is exhaustive and structured to facilitate further processing by downstream agents.
+  backstory: >
+    This agent works within a dbt project context to ensure data integrity and consistency across the pipeline when changes are requested to a specific model. It uses the lineage of models to identify all impacted models and categorize them into upstream and downstream groups, enabling precise propagation of changes.
+  verbose: true
+  allow_delegation: false
+
+
 solution_design_agent:
   role: > 
     Analyze the extracted information and determine if the user's request is for retrieving information or making changes to the model.
