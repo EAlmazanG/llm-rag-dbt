@@ -212,18 +212,11 @@ search_model_task:
   expected_output: > 
     The name of the identified model and a brief summary of why it matches the request.
 
-extract_info_task:
+retrieve_info_task:
   description: > 
     Retrieve all relevant technical and contextual information about the identified model, including dependencies, structure, and other details.
   expected_output: > 
     A detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
-
-select_output_task:
-  description: > 
-    Analyze the request to determine whether it requires informational output or changes and process the extracted information accordingly.
-  expected_output: > 
-    If informational: a formatted response with all relevant details.  
-    If changes are required: structured data ready for the solution design phase.
 
 solution_design_task:
   description: > 
