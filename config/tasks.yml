@@ -230,11 +230,17 @@ generate_info_report_task:
 
 search_involved_models_task:
   description: > 
-    Analyze the provided dbt lineage and identify all additional models (upstream and downstream) that need changes to maintain consistency when modifications are made to the primary model. This includes:
-      - Ensuring added fields propagate downstream to all dependent models.
-      - Identifying and addressing missing fields in upstream models required by downstream models.
-      - Ensuring removed fields are also deleted from all dependent models.
+    Analyze the provided dbt lineage and identify all additional models (upstream and downstream) that need changes to maintain consistency when modifications are made to the primary model.
+    You must give me the models indicated by the target, i.e:
+     - If I need for example the models whose code and context I have to take into account to make the changes in the main model or
+     - The models I have to modify to make the change in the main model in order not to break anything and that the changes are set correctly, for example:
+        - Ensuring added fields propagate downstream to all dependent models.
+        - Identifying and addressing missing fields in upstream models required by downstream models.
+        - Ensuring removed fields are also deleted from all dependent models.
+    Remember that you cant invent information that you don't have context or evidence about.
     Inputs:
+      - Target: 
+        {target}
       - Request, Original user request: 
         {request}
       - Identified model, The primary model where changes are requested: 
