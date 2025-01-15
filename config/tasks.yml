@@ -214,7 +214,13 @@ search_model_task:
 
 generate_info_report_task:
   description: > 
-    Retrieve all relevant technical and contextual information about the identified model, including dependencies, structure, and other details.
+    Retrieve all relevant technical and contextual information about the request of the user, base on the information gather about the dbt model, including dependencies, structure, and other details, base on:
+    Original user request:
+    {request}
+    Info extracted about the impacted model:
+    {search_impacted_models_ouput}
+    Additional documentation about the model:
+    {impacted_models_documents}
   expected_output: > 
     A detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
 
