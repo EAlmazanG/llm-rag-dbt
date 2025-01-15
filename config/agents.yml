@@ -69,7 +69,7 @@ search_model_agent:
   verbose: true
   allow_delegation: false
 
-retrieve_info_agent:
+generate_info_report_agent:
   role: > 
     Retrieve and compile detailed information about a specific model and its dependencies based on repository documents and lineage.
   goal: > 

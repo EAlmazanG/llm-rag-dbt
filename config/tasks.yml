@@ -212,7 +212,7 @@ search_model_task:
   expected_output: > 
     The name of the identified model and a brief summary of why it matches the request.
 
-retrieve_info_task:
+generate_info_report_task:
   description: > 
     Retrieve all relevant technical and contextual information about the identified model, including dependencies, structure, and other details.
   expected_output: > 
