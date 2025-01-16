@@ -297,6 +297,13 @@ search_involved_models_task:
 
 solution_design_task:
   description: > 
-    Identify the primary model to modify and determine any secondary models affected by the requested changes, outlining the necessary updates for each.
-  expected_output: > 
-    A plan specifying the primary model for changes, the impacted secondary models, and the required updates for each model.
+    As dbt expert developer, design the needed changes in the model described. to fulfilled the user request: {request}
+    The available context to make the cahnges includes:
+     - Info about the model:
+      {search_impacted_models_ouput}
+     - Code and all the details about the code and the model:
+      {identified_model_documents}
+     - All the info of their sources and upstream models that you must have into account to design a proper solution:
+      {retrieved_context_complete}
+  expected_output: >
+    Changes that are necessary to correctly adjust the main model, stick only to changes in this model.
