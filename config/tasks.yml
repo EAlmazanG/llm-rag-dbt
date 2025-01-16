@@ -250,55 +250,50 @@ search_involved_models_task:
       - Lineage, The complete lineage DataFrame of the dbt project: 
         {lineage_df}    
   expected_output: > 
-    The output will be a JSON file with the extracted information as in the example. Depending on what is specified in targe, the file will contain the models:
-    - If you specify models whose context is necessary to take into account when designing the changes, it will give only model found upstream that contain information and context necessary to design the solution,no me is models whose context is not necessary to implement the change.
+    The output will be a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models:
+    - If you specify models whose context is necessary to take into account when designing the changes, it will give only models found upstream that contain information and context necessary to design the solution, no models whose context is not necessary to implement the change.
+      For example:
+        - The direct parents of the target model being modified, as they provide necessary columns or calculations used in the change.
+        - The model from which the new column originates (e.g., the original source system or staging model) and its direct upstream dependencies, up to the raw data source.
+        - Models involved in a join within a new CTE to calculate additional metrics or dimensions.
+        - Staging models providing data enrichment or formatting for the fields being added or changed in the target model.
     - If you specify the models that need to be adjusted after making changes to the main model, you will return the models that need to be modified so that the changes to the main model are correct and the changes go as far as they need to go. Remember, only the models where adjustments need to be made.
+      The changes can be made in upstream and downstream models, for example:
+        - All downstream models that depend on the modified model, ensuring they include the new column or adjusted logic (e.g., reporting models or dashboards).
+        - Intermediate models between the source and the target model, where the new column or calculation needs to propagate.
+        - Aggregation models downstream that use the modified model to calculate final metrics or summaries.
+        - Documentation models or validation models that need to be updated to account for the changes in schema or logic.
 
 
     The target model will not be included in either case.
-    The json example:
-    {
-      "upstream_models": [
+     - The json example in the first case:
         {
-          "model_name": "<Model name>",
-          "required_changes": ["<List of fields to add/remove>"]
+          "upstream_models": [
+            {
+              "model_name": "<Model name>",
+              "requirement": ["<Context needed from this model to ensure that the solution design for the request is 100% correct>"]
+            },
+            {
+              "model_name": "<Model name>",
+              "requirement": ["<Context needed from this model to ensure that the solution design for the request is 100% correct>"]
+            }, ...
+          ]
         }
-      ],
-      "downstream_models": [
+     - The json example in the second case:
         {
-          "model_name": "<Model name>",
-          "required_changes": ["<List of fields to add/remove>"]
+          "upstream_models": [
+            {
+              "model_name": "<Model name>",
+              "requirement": ["<List of fields to add/remove/modify>"]
+            }, ...
+          ],
+          "downstream_models": [
+            {
+              "model_name": "<Model name>",
+              "requirement": ["<List of fields to add/remove/modify>"]
+            }, ...
+          ]
         }
-      ],
-      "primary_model": {
-        "model_name": "<Primary model>",
-        "required_changes": ["<List of requested changes>"]
-      }
-    }
-
-    Example Output:
-    {
-      "upstream_models": [
-        {
-          "model_name": "stg_customers.sql",
-          "required_changes": ["Add 'customer_region"]
-        }
-      ],
-      "downstream_models": [
-        {
-          "model_name": "dim_customers.sql",
-          "required_changes": ["Propagate 'customer_region'", "Remove 'customer_age'"]
-        },
-        {
-          "model_name": "fact_orders.sql",
-          "required_changes": ["Remove 'customer_age'"]
-        }
-      ],
-      "primary_model": {
-        "model_name": "dim_customers.sql",
-        "required_changes": ["Add 'customer_region'", "Remove 'customer_age'"]
-      }
-    }
 
 solution_design_task:
   description: > 
