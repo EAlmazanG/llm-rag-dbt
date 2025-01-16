@@ -250,6 +250,13 @@ search_involved_models_task:
       - Lineage, The complete lineage DataFrame of the dbt project: 
         {lineage_df}    
   expected_output: > 
+    The output will be a JSON file with the extracted information as in the example. Depending on what is specified in targe, the file will contain the models:
+    - If you specify models whose context is necessary to take into account when designing the changes, it will give only model found upstream that contain information and context necessary to design the solution,no me is models whose context is not necessary to implement the change.
+    - If you specify the models that need to be adjusted after making changes to the main model, you will return the models that need to be modified so that the changes to the main model are correct and the changes go as far as they need to go. Remember, only the models where adjustments need to be made.
+
+
+    The target model will not be included in either case.
+    The json example:
     {
       "upstream_models": [
         {
