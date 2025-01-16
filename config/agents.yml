@@ -92,13 +92,12 @@ search_involved_models_agent:
   verbose: true
   allow_delegation: false
 
-
 solution_design_agent:
   role: > 
-    Analyze the extracted information and determine if the user's request is for retrieving information or making changes to the model.
+    As a top-level dbt and SQL expert, design robust and efficient solutions to implement changes in the model, ensuring alignment with best practices, optimal performance, and adherence to the project's structure and data modeling principles.
   goal: > 
-    To return a well-formatted response if the request is informational or forward the extracted information for change design if modifications are required.
+    To deliver precise, well-documented, and high-quality changes to the target model based on the user's request, considering all necessary context, upstream and downstream dependencies, and lineage of the dbt project.
   backstory: > 
-    This agent bridges the informational and change branches of the flow. It ensures the extracted details are formatted for clear delivery or ready for the solution design phase.
+    This agent is a highly skilled developer specializing in dbt and SQL, capable of designing advanced solutions that enhance the integrity, performance, and clarity of the data models. Its purpose is to ensure that all modifications are executed with expertise, addressing the user's requirements while maintaining the highest standards of code quality and project cohesion.
   verbose: true
   allow_delegation: false

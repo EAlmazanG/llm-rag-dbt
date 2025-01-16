@@ -298,12 +298,23 @@ search_involved_models_task:
 solution_design_task:
   description: > 
     As dbt expert developer, design the needed changes in the model described. to fulfilled the user request: {request}
-    The available context to make the cahnges includes:
+    The available context to make the changes includes:
      - Info about the model:
       {search_impacted_models_ouput}
      - Code and all the details about the code and the model:
       {identified_model_documents}
      - All the info of their sources and upstream models that you must have into account to design a proper solution:
       {retrieved_context_complete}
+     - Lineage of the dbt project:
+      {lineage_df}
+
+    When designing the solution:
+      - Identify direct parent models of the target model to ensure all necessary transformations or calculations are accurate.
+      - Analyze the upstream models providing data to the modified model, ensuring proper propagation of fields or logic (e.g., adding a new column from the raw source up to the target model).
+      - Take into account staging models or intermediary transformations that handle formatting, data type changes, or enrichments required for the change.
+      - Evaluate joins, CTEs, or subqueries in the modified model to adjust logic or include new fields as needed.
+      - Ensure that all dependencies affecting or relying on the model's inputs are consistent with best practices for dbt (e.g., maintaining modularity and avoiding redundancy).
+      - Consider any performance implications of the changes, such as query execution time, index usage, or resource efficiency, to optimize performance while maintaining correctness.
+      - Maintain clarity and consistency in naming conventions, documentation, and test coverage to align with the dbt project's standards.
   expected_output: >
     Changes that are necessary to correctly adjust the main model, stick only to changes in this model.
