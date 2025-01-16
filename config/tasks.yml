@@ -250,7 +250,7 @@ search_involved_models_task:
       - Lineage, The complete lineage DataFrame of the dbt project: 
         {lineage_df}    
   expected_output: > 
-    The output will be a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models:
+    The output will be JUST a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models:
     - If you specify models whose context is necessary to take into account when designing the changes, it will give only models found upstream that contain information and context necessary to design the solution, no models whose context is not necessary to implement the change.
       For example:
         - The direct parents of the target model being modified, as they provide necessary columns or calculations used in the change.
@@ -271,11 +271,11 @@ search_involved_models_task:
           "upstream_models": [
             {
               "model_name": "<Model name>",
-              "requirement": ["<Context needed from this model to ensure that the solution design for the request is 100% correct>"]
+              "requirement": ["<Context needed from this model to ensure that the solution design for the request is 100% correct, be super concise>"]
             },
             {
               "model_name": "<Model name>",
-              "requirement": ["<Context needed from this model to ensure that the solution design for the request is 100% correct>"]
+              "requirement": ["<Context needed from this model to ensure that the solution design for the request is 100% correct, be super concise>"]
             }, ...
           ]
         }
