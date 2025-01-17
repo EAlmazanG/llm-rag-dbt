@@ -330,3 +330,27 @@ solution_design_task:
       - Maintain clarity and consistency in naming conventions, documentation, and test coverage to align with the dbt project's standards.
   expected_output: >
     Changes that are necessary to correctly adjust the main model, stick only to changes in this model.
+
+solution_design_models_impacted_task:
+  description: > 
+    As dbt expert developer, design the needed changes in the model described. to fulfilled the user request: {request}
+    The available context to make the changes includes:
+     - Solutions and changes that are going to be made to the main affected model:
+      {design_solution_main_model_ouput}
+     - Models affected that must be adjusted:
+      {search_models_impacted_by_change_ouput}
+     - Info of this models that you must have into account to design a proper solution:
+      {retrieve_context_for_solution_impacted_models}
+     - Lineage of the dbt project:
+      {lineage_df}
+
+    When designing the solution:
+      - Identify direct parent models of the target model to ensure all necessary transformations or calculations are accurate.
+      - Analyze the upstream models providing data to the modified model, ensuring proper propagation of fields or logic (e.g., adding a new column from the raw source up to the target model).
+      - Take into account staging models or intermediary transformations that handle formatting, data type changes, or enrichments required for the change.
+      - Evaluate joins, CTEs, or subqueries in the modified model to adjust logic or include new fields as needed.
+      - Ensure that all dependencies affecting or relying on the model's inputs are consistent with best practices for dbt (e.g., maintaining modularity and avoiding redundancy).
+      - Consider any performance implications of the changes, such as query execution time, index usage, or resource efficiency, to optimize performance while maintaining correctness.
+      - Maintain clarity and consistency in naming conventions, documentation, and test coverage to align with the dbt project's standards.
+  expected_output: >
+    Changes that are necessary to correctly adjust the main model, stick only to changes in this model.
