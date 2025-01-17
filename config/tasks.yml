@@ -353,4 +353,4 @@ solution_design_models_impacted_task:
       - Consider any performance implications of the changes, such as query execution time, index usage, or resource efficiency, to optimize performance while maintaining correctness.
       - Maintain clarity and consistency in naming conventions, documentation, and test coverage to align with the dbt project's standards.
   expected_output: >
-    Changes that are necessary to correctly adjust the main model, stick only to changes in this model.
+    Changes that are necessary to correctly adjust the seconday model, stick only to changes in this affected models and avoid the main model.
