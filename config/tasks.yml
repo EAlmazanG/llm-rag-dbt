@@ -228,19 +228,12 @@ generate_info_report_task:
     Only if needed, generate a detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
 
 
-search_involved_models_task:
+search_models_needed_task:
   description: > 
     Analyze the provided dbt lineage and identify all additional models (upstream and downstream) that need changes to maintain consistency when modifications are made to the primary model.
-    You must give me the models indicated by the target, i.e:
-     - If I need for example the models whose code and context I have to take into account to make the changes in the main model or
-     - The models I have to modify to make the change in the main model in order not to break anything and that the changes are set correctly, for example:
-        - Ensuring added fields propagate downstream to all dependent models.
-        - Identifying and addressing missing fields in upstream models required by downstream models.
-        - Ensuring removed fields are also deleted from all dependent models.
+    You must give me the models whose code and context I have to take into account to make the changes in the main model.
     Remember that you cant invent information that you don't have context or evidence about.
     Inputs:
-      - Target: 
-        {target}
       - Request, Original user request: 
         {request}
       - Identified model, The primary model where changes are requested: 
@@ -250,23 +243,15 @@ search_involved_models_task:
       - Lineage, The complete lineage DataFrame of the dbt project: 
         {lineage_df}    
   expected_output: > 
-    The output will be JUST a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models:
-    - If you specify models whose context is necessary to take into account when designing the changes, it will give only models found upstream that contain information and context necessary to design the solution, no models whose context is not necessary to implement the change.
+    The output will be JUST a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models whose context is necessary to take into account when designing the changes, it will give only models found upstream that contain information and context necessary to design the solution, no models whose context is not necessary to implement the change.
       For example:
         - The direct parents of the target model being modified, as they provide necessary columns or calculations used in the change.
         - The model from which the new column originates (e.g., the original source system or staging model) and its direct upstream dependencies, up to the raw data source.
         - Models involved in a join within a new CTE to calculate additional metrics or dimensions.
         - Staging models providing data enrichment or formatting for the fields being added or changed in the target model.
-    - If you specify the models that need to be adjusted after making changes to the main model, you will return the models that need to be modified so that the changes to the main model are correct and the changes go as far as they need to go. Remember, only the models where adjustments need to be made.
-      The changes can be made in upstream and downstream models, for example:
-        - All downstream models that depend on the modified model, ensuring they include the new column or adjusted logic (e.g., reporting models or dashboards).
-        - Intermediate models between the source and the target model, where the new column or calculation needs to propagate.
-        - Aggregation models downstream that use the modified model to calculate final metrics or summaries.
-        - Documentation models or validation models that need to be updated to account for the changes in schema or logic.
-
 
     The target model will not be included in either case.
-     - The json example in the first case:
+     - json example:
         {
           "upstream_models": [
             {
@@ -279,7 +264,34 @@ search_involved_models_task:
             }, ...
           ]
         }
-     - The json example in the second case:
+
+search_models_impacted_task:
+  description: > 
+    Analyze the provided dbt lineage and identify all additional models (upstream and downstream) that need changes to maintain consistency when modifications are made to the primary model.
+    You must give me the models I have to modify to make the change in the main model in order not to break anything and that the changes are set correctly, for example:
+        - Ensuring added fields propagate downstream to all dependent models.
+        - Identifying and addressing missing fields in upstream models required by downstream models.
+        - Ensuring removed fields are also deleted from all dependent models.
+    Remember that you cant invent information that you don't have context or evidence about.
+    Inputs:
+      - Request, Original user request: 
+        {request}
+      - Identified model, The primary model where changes are requested: 
+        {identified_model}
+      - Model info, Information about impacted models from previous tasks: 
+        {search_impacted_models_ouput}
+      - Lineage, The complete lineage DataFrame of the dbt project: 
+        {lineage_df}    
+  expected_output: > 
+    The output will be JUST a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models that need to be adjusted after making changes to the main model, you will return the models that need to be modified so that the changes to the main model are correct and the changes go as far as they need to go. Remember, only the models where adjustments need to be made.
+    The changes can be made in upstream and downstream models, for example:
+      - All downstream models that depend on the modified model, ensuring they include the new column or adjusted logic (e.g., reporting models or dashboards).
+      - Intermediate models between the source and the target model, where the new column or calculation needs to propagate.
+      - Aggregation models downstream that use the modified model to calculate final metrics or summaries.
+      - Documentation models or validation models that need to be updated to account for the changes in schema or logic.
+
+    The target model will not be included in either case.
+     - json example:
         {
           "upstream_models": [
             {
