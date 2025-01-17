@@ -81,7 +81,8 @@ class EnhancedRetriever:
         # Retrieve initial documents
         retriever = self.vectorstore.as_retriever(
             search_type="similarity",
-            search_kwargs={"k": top_k, "filter": filter_criteria},
+            #search_kwargs={"k": top_k, "filter": filter_criteria},
+            search_kwargs={"k": top_k},
         )
         primary_docs = retriever.invoke(query)
 
