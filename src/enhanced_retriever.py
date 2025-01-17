@@ -7,45 +7,32 @@ class EnhancedRetriever:
         self.embedding_function = embedding_function
         self.max_tokens = max_tokens
 
-    def dynamic_filter(self, query):
-        """
-        Apply dynamic filters based on the query content.
-        Example: prioritize dbt models, their dependencies, or specific attributes.
-        """
-        # Initialize the filter as None
-        filter_criteria = None
+def dynamic_filter(self, query):
+    """
+    Apply dynamic filters based on the query content.
+    """
+    filter_criteria = None
+    query_lower = query.lower()
 
-        # Analyze the content of the query
-        query_lower = query.lower()
+    if "source" in query_lower or "staging" in query_lower:
+        filter_criteria = {"model_category": "stg", "is_source_model": True}
+    elif "business" in query_lower or "output" in query_lower:
+        filter_criteria = {"is_end_model": True}
+    elif "test" in query_lower:
+        filter_criteria = {"has_tests": True}
+    elif "macro" in query_lower:
+        filter_criteria = {"is_macro": True}
+    elif "dependencies" in query_lower or "upstream" in query_lower:
+        filter_criteria = {"parent_count": {"$gt": 0}}  # Valida padres según conteo
+    elif "downstream" in query_lower or "children" in query_lower:
+        filter_criteria = {"child_count": {"$gt": 0}}  # Valida hijos según conteo
 
-        # Filters based on specific keywords in the query
-        if "source" in query_lower or "staging" in query_lower:
-            # Prioritize source or staging models
-            filter_criteria = {"model_category": "stg", "is_source_model": True}
-        elif "business" in query_lower or "output" in query_lower:
-            # Prioritize business output models
-            filter_criteria = {"is_end_model": True}
-        elif "test" in query_lower:
-            # Prioritize models with tests
-            filter_criteria = {"has_tests": True}
-        elif "macro" in query_lower:
-            # Prioritize macros
-            filter_criteria = {"is_macro": True}
-        elif "dependencies" in query_lower or "upstream" in query_lower:
-            # Prioritize models with upstream dependencies
-            filter_criteria = {"parents": {"$exists": True}}
-        elif "downstream" in query_lower or "children" in query_lower:
-            # Prioritize models with downstream dependencies
-            filter_criteria = {"children": {"$exists": True}}
+    if "sql" in query_lower or "code" in query_lower:
+        filter_criteria = {"knowledge_type": "code"}
+    elif "description" in query_lower or "explain" in query_lower:
+        filter_criteria = {"knowledge_type": "description"}
 
-        # Filter by knowledge type, if mentioned in the query
-        if "sql" in query_lower or "code" in query_lower:
-            filter_criteria = {"knowledge_type": "code"}
-        elif "description" in query_lower or "explain" in query_lower:
-            filter_criteria = {"knowledge_type": "description"}
-
-        # Return the filter or None if no conditions are set
-        return filter_criteria
+    return filter_criteria
 
     def expand_context(self, primary_docs, k=3):
         """
