@@ -244,11 +244,11 @@ search_models_needed_task:
         {lineage_df}    
   expected_output: > 
     The output will be JUST a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models whose context is necessary to take into account when designing the changes, it will give only models found upstream that contain information and context necessary to design the solution, no models whose context is not necessary to implement the change.
-      For example:
-        - The direct parents of the target model being modified, as they provide necessary columns or calculations used in the change.
-        - The model from which the new column originates (e.g., the original source system or staging model) and its direct upstream dependencies, up to the raw data source.
-        - Models involved in a join within a new CTE to calculate additional metrics or dimensions.
-        - Staging models providing data enrichment or formatting for the fields being added or changed in the target model.
+    For example:
+      - The direct parents of the target model being modified, as they provide necessary columns or calculations used in the change.
+      - The model from which the new column originates (e.g., the original source system or staging model) and its direct upstream dependencies, up to the raw data source.
+      - Models involved in a join within a new CTE to calculate additional metrics or dimensions.
+      - Staging models providing data enrichment or formatting for the fields being added or changed in the target model.
 
     The target model will not be included in either case.
      - json example:
@@ -269,19 +269,19 @@ search_models_impacted_task:
   description: > 
     Analyze the provided dbt lineage and identify all additional models (upstream and downstream) that need changes to maintain consistency when modifications are made to the primary model.
     You must give me the models I have to modify to make the change in the main model in order not to break anything and that the changes are set correctly, for example:
-        - Ensuring added fields propagate downstream to all dependent models.
-        - Identifying and addressing missing fields in upstream models required by downstream models.
-        - Ensuring removed fields are also deleted from all dependent models.
+      - Ensuring added fields propagate downstream to all dependent models.
+      - Identifying and addressing missing fields in upstream models required by downstream models.
+      - Ensuring removed fields are also deleted from all dependent models.
     Remember that you cant invent information that you don't have context or evidence about.
     Inputs:
-      - Request, Original user request: 
-        {request}
-      - Identified model, The primary model where changes are requested: 
-        {identified_model}
-      - Model info, Information about impacted models from previous tasks: 
-        {search_impacted_models_ouput}
-      - Lineage, The complete lineage DataFrame of the dbt project: 
-        {lineage_df}    
+    - Request, Original user request: 
+      {request}
+    - Identified model, The primary model where changes are requested: 
+      {identified_model}
+    - Model info, Information about impacted models from previous tasks: 
+      {search_impacted_models_ouput}
+    - Lineage, The complete lineage DataFrame of the dbt project: 
+      {lineage_df}    
   expected_output: > 
     The output will be JUST a JSON file with the extracted information as in the example. Depending on what is specified in target, the file will contain the models that need to be adjusted after making changes to the main model, you will return the models that need to be modified so that the changes to the main model are correct and the changes go as far as they need to go. Remember, only the models where adjustments need to be made.
     The changes can be made in upstream and downstream models, for example:
@@ -311,14 +311,14 @@ solution_design_task:
   description: > 
     As dbt expert developer, design the needed changes in the model described. to fulfilled the user request: {request}
     The available context to make the changes includes:
-     - Info about the model:
-      {search_impacted_models_ouput}
-     - Code and all the details about the code and the model:
-      {identified_model_documents}
-     - All the info of their sources and upstream models that you must have into account to design a proper solution:
-      {retrieved_context_complete}
-     - Lineage of the dbt project:
-      {lineage_df}
+      - Info about the model:
+        {search_impacted_models_ouput}
+      - Code and all the details about the code and the model:
+        {identified_model_documents}
+      - All the info of their sources and upstream models that you must have into account to design a proper solution:
+        {retrieved_context_complete}
+      - Lineage of the dbt project:
+        {lineage_df}
 
     When designing the solution:
       - Identify direct parent models of the target model to ensure all necessary transformations or calculations are accurate.
@@ -335,14 +335,16 @@ solution_design_models_impacted_task:
   description: > 
     As dbt expert developer, design the needed changes in the model described. to fulfilled the user request: {request}
     The available context to make the changes includes:
-     - Solutions and changes that are going to be made to the main affected model:
-      {design_solution_main_model_ouput}
-     - Models affected that must be adjusted:
-      {search_models_impacted_by_change_ouput}
-     - Info of this models that you must have into account to design a proper solution:
-      {retrieve_context_for_solution_impacted_models}
-     - Lineage of the dbt project:
-      {lineage_df}
+      - Request, Original user request: 
+        {request}
+      - Solutions and changes that are going to be made to the main affected model:
+        {design_solution_main_model_ouput}
+      - Models affected that must be adjusted:
+        {search_models_impacted_by_change_ouput}
+      - Info of this models that you must have into account to design a proper solution:
+        {retrieve_context_for_solution_impacted_models}
+      - Lineage of the dbt project:
+        {lineage_df}
 
     When designing the solution:
       - Identify direct parent models of the target model to ensure all necessary transformations or calculations are accurate.
@@ -357,5 +359,27 @@ solution_design_models_impacted_task:
 
 concilation_and_testing_task:
   description: > 
+    As dbt expert QA developer, your are going to receive the technical solution and changes from a couple of dbt expertes to fulfilled the user request: {request}
+    Your mission is to verify that the changes proposed to the main model and the affected models are correct and coherent, adjust them if needed and make a checklist to the tests that are needed to check that everything is correct,
+    for example:
+      - Test that the changes hadn't added dupplicates in the primary keys.
+      - Check that the new columns are not completly null.
+      - Check that number of registers and the granularity of the model is the same (if the change is not related with change the granularity of the model).
+      - Check that the number of rows are the same.
 
+    The available context to do the checks:
+      - Request, Original user request: 
+        {request}
+      - Solutions and changes that are going to be made to the main affected model:
+        {design_solution_main_model_ouput}
+      - Solutions and changes that are going to be made to the affected models to maintain consistency and ensure that the changes are well propagated:
+        {design_solution_impacted_models_output}
+      - Info of this models that you must have into account to design a proper solution:
+        {retrieve_context_for_solution_impacted_models}
+      - Lineage of the dbt project:
+        {lineage_df}
+
+    Remember that you cant invent or hallucinate information that you don't have context or evidence about.
   expected_output: >
+    Report the changes to the main models, the changes to the secondary models, and the tests (description and sql code) that are needed to check that the changes proposed are correct.
+    Be clear an concise in both, avoid large and complex explanations with empty words, select only the needed tests to check that everything is ok takeing into account the proposed changes.
