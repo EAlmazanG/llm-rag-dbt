@@ -292,6 +292,25 @@ generate_info_report_task:
     Stick to always answering the user's request as the main subject of the reply.
     Don't create new information that is not available in the one that you have available, if the info does not exist, dont put it in the report.
     Only if needed, generate a detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
+    The output must follow this standardized Markdown structure:
+
+    # User Request
+    Provide a clear restatement of the user's original request.
+
+    # Model Summary
+    - Include the name of the model.
+    - Provide a brief description of the model's purpose and functionality.
+    - List all columns with their names and descriptions.
+    - State the materialization type of the model (e.g., table, view).
+    - Detail the lineage relationships, specifying the parent and child models.
+
+    # Context Retrieved
+    - Summarize the relevant context and information retrieved about the model.
+    - If some context is missing or unavailable, explicitly state it.
+
+    ## Notes
+    - Ensure the report is concise, clear, and derived only from the available context.
+    - Do not include speculative or invented information.
 
 search_model_task:
   description: > 
@@ -306,6 +325,18 @@ search_model_task:
     {lineage}
   expected_output: > 
     The name of the identified model and a brief summary of why it matches the request.
+    The output must follow this standardized Markdown structure:
+
+    # User Request
+    Clearly restate the user's request.
+
+    # Identified Model
+    - Provide the name of the identified model.
+    - Include a short explanation of why this model matches the user's request, referencing its purpose or relevance.
+
+    ## Notes
+    - Ensure the identified model directly addresses the user's needs.
+    - Do not include unnecessary information or speculative assumptions.
 
 solution_design_task:
   description: > 
@@ -330,8 +361,29 @@ solution_design_task:
       - Ensure that all dependencies affecting or relying on the model's inputs are consistent with best practices for dbt (e.g., maintaining modularity and avoiding redundancy).
       - Consider any performance implications of the changes, such as query execution time, index usage, or resource efficiency, to optimize performance while maintaining correctness.
       - Maintain clarity and consistency in naming conventions, documentation, and test coverage to align with the dbt project's standards.
+  
   expected_output: >
     Changes that are necessary to correctly adjust the main model, stick only to changes in this model.
+    The output must follow this standardized Markdown structure:
+
+    # User Request
+    Summarize the original request concisely.
+
+    # Proposed Changes to the Main Model
+    - Specify the name of the main model.
+    - Provide a list of precise changes to be made to the model, such as adding or modifying columns, adjusting logic, or updating dependencies.
+    - Detail how each change affects the model's structure, logic, or data.
+    - Give only the code of the sections that are needed to changes (as is meade in Github for a PR).
+    - Include the changes in code and in documentation.
+
+    # Dependencies and Context
+    - Identify any upstream or downstream dependencies that affect or are affected by the changes.
+    - Summarize how the dependencies are considered in the solution to ensure consistency.
+
+    ## Notes
+    - Focus exclusively on changes to the main model.
+    - Ensure all proposed changes are actionable, based on the provided context, and adhere to best practices.
+    - Avoid adding speculative or unnecessary information.
 
 solution_design_models_impacted_task:
   description: > 
@@ -356,8 +408,29 @@ solution_design_models_impacted_task:
       - Ensure that all dependencies affecting or relying on the model's inputs are consistent with best practices for dbt (e.g., maintaining modularity and avoiding redundancy).
       - Consider any performance implications of the changes, such as query execution time, index usage, or resource efficiency, to optimize performance while maintaining correctness.
       - Maintain clarity and consistency in naming conventions, documentation, and test coverage to align with the dbt project's standards.
+  
   expected_output: >
     Changes that are necessary to correctly adjust the secondary models, stick only to changes in these affected models and avoid the main model, whose change has been already deffined.
+    The output must follow this standardized Markdown structure:
+
+    # User Request
+    Provide a concise restatement of the original request.
+
+    # Proposed Changes to Secondary Models
+    - List all affected models and specify their names.
+    - For each model, describe the exact changes needed to maintain consistency with the main model.
+    - Detail how the changes ensure correct propagation of data and logic across the models.
+    - Give only the code of the sections that are needed to changes (as is meade in Github for a PR).
+    - Include the changes in code and in documentation.
+
+    # Dependencies and Context
+    - Highlight any dependencies considered in the design.
+    - Explain how these dependencies are addressed to ensure data integrity and consistency.
+
+    ## Notes
+    - Focus exclusively on secondary models; do not duplicate information about changes to the main model.
+    - Ensure all changes are coherent, precise, and based on the provided context.
+    - Avoid introducing unnecessary or speculative changes.
 
 concilation_and_testing_task:
   description: > 
@@ -383,3 +456,30 @@ concilation_and_testing_task:
   expected_output: >
     Report the changes to the main models, the changes to the secondary models, and the tests (description and sql code) that are needed to check that the changes proposed are correct.
     Be clear an concise in both, avoid large and complex explanations with empty words, select only the needed tests to check that everything is ok takeing into account the proposed changes.
+    The output must follow this standardized Markdown structure:
+
+    # User Request
+    Summarize the user's request briefly and clearly.
+
+    # Validation of Proposed Changes
+    - For the main model:
+        - Specify the proposed changes.
+        - Provide a validation status for each change, explaining whether it is correct or requires adjustments.
+        - Give only the code of the sections that are needed to changes (as is meade in Github for a PR).
+        - Include the changes in code and in documentation.
+    - For secondary impacted models:
+        - Specify the proposed changes.
+        - Provide a validation status for each change, with explanations if adjustments are needed.
+        - Give only the code of the sections that are needed to changes (as is meade in Github for a PR).
+        - Include the changes in code and in documentation.
+        
+    # Required Tests
+    - Include a concise list of tests needed to validate the changes, ensuring correctness and consistency.
+    - For each test:
+        - Provide a brief description of the test's purpose (e.g., checking for duplicates, null values).
+        - Include the SQL query to perform the test.
+
+    ## Notes
+    - Ensure all validations and tests are based on the provided context and changes.
+    - Avoid including redundant or speculative tests.
+    - Be concise and clear, focusing only on critical validations and tests required to confirm the quality of the changes.
