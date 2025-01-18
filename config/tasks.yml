@@ -1,30 +1,3 @@
-interpretation_task:
-  description: >
-    Evaluate the user's request:
-    {request}
-    and based on the evaluation, determine the required action:
-    1) adding a field -> return ADD_COLUMN
-    2) modifying an existing model -> return MODIFY_MODEL
-    3) retrieving and returning specific information. -> return RETRIVE_INFO
-    
-    Reflect on the request and provide a concise plan for the approach:
-    - If the action involves adding a field: Identify where the field is currently available, if provided.
-    - Determine how to propagate the field through the necessary models or transformations to integrate it into the target model.
-    - Consider the impact on related models and dependencies.
-    - If the action involves modifying an existing model: Identify the specific changes required.
-    - Assess how these changes affect the structure, relationships, and downstream dependencies of the model.
-    - If the action involves retrieving or returning information: Identify the models containing the relevant data.
-    - Analyze how these models are related, and determine the queries or transformations needed to extract the requested information.
-
-  expected_output: >
-    Return one of the following actions:
-    - ADD_COLUMN
-    - MODIFY_MODEL
-    - RETRIEVE_INFO
-
-    Return the required action from the three proposed.
-    REMEMBER: Provide no extra commentary or explanation, just the minimal information required,  
-
 evaluation_task:
   description: >
     Based on the interpretation of an expert dbt and problem interpreter: 
@@ -188,6 +161,7 @@ plan_task:
     Return only useful information, no additional filler text or unnecessary explanations, get to the point.
     REMEMBER: Provide no extra commentary or explanation, just the minimal information required.
 
+
 check_model_task:
   description: > 
     Verify if the request explicitly mentions a model that requires information retrieval or changes.
@@ -197,36 +171,33 @@ check_model_task:
     {lineage}
   expected_output: > 
     A dict with "status", indicating whether a model was detected ("DETECTED" or "NOT DETECTED") and "identified_model" if applicable. The identified model must be ALWAYS one of the models of the dbt lineage.
+
+interpretation_task:
+  description: >
+    Evaluate the user's request:
+    {request}
+    and based on the evaluation, determine the required action:
+    1) adding a field -> return ADD_COLUMN
+    2) modifying an existing model -> return MODIFY_MODEL
+    3) retrieving and returning specific information. -> return RETRIVE_INFO
     
-search_model_task:
-  description: > 
-    Locate the models most relevant to the user's request by analyzing lineage and matching the context.
-    User request:
-    {request}
-    Main impacted models names:
-    {impacted_models}
-    Main impacted models details and code:
-    {impacted_models_documents}
-    Lineage of the impacted models:
-    {lineage}
-  expected_output: > 
-    The name of the identified model and a brief summary of why it matches the request.
+    Reflect on the request and provide a concise plan for the approach:
+    - If the action involves adding a field: Identify where the field is currently available, if provided.
+    - Determine how to propagate the field through the necessary models or transformations to integrate it into the target model.
+    - Consider the impact on related models and dependencies.
+    - If the action involves modifying an existing model: Identify the specific changes required.
+    - Assess how these changes affect the structure, relationships, and downstream dependencies of the model.
+    - If the action involves retrieving or returning information: Identify the models containing the relevant data.
+    - Analyze how these models are related, and determine the queries or transformations needed to extract the requested information.
 
-generate_info_report_task:
-  description: > 
-    Retrieve all relevant technical and contextual information about the request of the user, base on the information gather about the dbt model, including dependencies, structure, and other details, base on:
-    Original user request:
-    {request}
-    Info extracted about the impacted model:
-    {search_impacted_models_ouput}
-    Additional documentation about the model:
-    {impacted_models_documents}
+  expected_output: >
+    Return one of the following actions:
+    - ADD_COLUMN
+    - MODIFY_MODEL
+    - RETRIEVE_INFO
 
-  expected_output: > 
-    Stick to always answering the user's request as the main subject of the reply.
-    Don't create new information that is not available in the one that you have available, if the info does not exist, dont put it in the report.
-    Only if needed, generate a detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
-
+    Return the required action from the three proposed.
+    REMEMBER: Provide no extra commentary or explanation, just the minimal information required,  
 
 search_models_needed_task:
   description: > 
@@ -306,6 +277,35 @@ search_models_impacted_task:
             }, ...
           ]
         }
+
+generate_info_report_task:
+  description: > 
+    Retrieve all relevant technical and contextual information about the request of the user, base on the information gather about the dbt model, including dependencies, structure, and other details, base on:
+    Original user request:
+    {request}
+    Info extracted about the impacted model:
+    {search_impacted_models_ouput}
+    Additional documentation about the model:
+    {impacted_models_documents}
+
+  expected_output: > 
+    Stick to always answering the user's request as the main subject of the reply.
+    Don't create new information that is not available in the one that you have available, if the info does not exist, dont put it in the report.
+    Only if needed, generate a detailed summary of the model, including its description, columns, materialization, lineage relationships, and other key details.
+
+search_model_task:
+  description: > 
+    Locate the models most relevant to the user's request by analyzing lineage and matching the context.
+    User request:
+    {request}
+    Main impacted models names:
+    {impacted_models}
+    Main impacted models details and code:
+    {impacted_models_documents}
+    Lineage of the impacted models:
+    {lineage}
+  expected_output: > 
+    The name of the identified model and a brief summary of why it matches the request.
 
 solution_design_task:
   description: > 
