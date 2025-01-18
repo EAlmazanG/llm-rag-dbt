@@ -311,6 +311,8 @@ solution_design_task:
   description: > 
     As dbt expert developer, design the needed changes in the model described. to fulfilled the user request: {request}
     The available context to make the changes includes:
+      - Request, Original user request: 
+        {request}    
       - Info about the model:
         {search_impacted_models_ouput}
       - Code and all the details about the code and the model:
@@ -374,8 +376,6 @@ concilation_and_testing_task:
         {design_solution_main_model_ouput}
       - Solutions and changes that are going to be made to the affected models to maintain consistency and ensure that the changes are well propagated:
         {design_solution_impacted_models_output}
-      - Info of this models that you must have into account to design a proper solution:
-        {retrieve_context_for_solution_impacted_models}
       - Lineage of the dbt project:
         {lineage_df}
 
