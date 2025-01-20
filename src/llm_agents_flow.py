@@ -149,6 +149,7 @@ class dbtChatFlow(Flow):
         
         if custom_llm:
             self.update_agents_with_llm(custom_llm)
+            print('using custom llm')
 
     def update_agents_with_llm(self, custom_llm):
         global check_model_agent, search_model_agent, interpretation_agent, generate_info_report_agent
