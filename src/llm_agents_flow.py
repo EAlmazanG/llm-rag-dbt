@@ -56,7 +56,6 @@ class dbtChatFlow(Flow):
         self._initialize_crews()
 
     def _initialize_agents_and_tasks(self):
-        print(self.agents_config)
         self.check_model_agent = Agent(config=self.agents_config['check_model_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['check_model_agent'])
         self.search_model_agent = Agent(config=self.agents_config['search_model_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['search_model_agent'])
         self.interpretation_agent = Agent(config=self.agents_config['interpretation_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['interpretation_agent'])
