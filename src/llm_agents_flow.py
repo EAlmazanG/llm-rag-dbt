@@ -25,6 +25,15 @@ from src import create_rag_db
 from src import llm_chain_tools
 from src.enhanced_retriever import EnhancedRetriever
 
+from crewai import Agent, Task, Crew
+from crewai import Flow
+from crewai.flow.flow import listen, start, and_, or_, router
+
+files = {
+    'agents': '../config/agents.yml',
+    'tasks': '../config/tasks.yml'
+}
+
 def update_tasks_and_agents_config(files):
     # Load configurations from YAML files
     configs = {}
@@ -36,159 +45,51 @@ def update_tasks_and_agents_config(files):
     agents_config = configs['agents']
     tasks_config = configs['tasks']
 
-    print(agents_config)
-    print(tasks_config)
     return agents_config, tasks_config
-
-files = {
-    'agents': '../config/agents.yml',
-    'tasks': '../config/tasks.yml'
-}
-agents_config, tasks_config = update_tasks_and_agents_config(files)
-
-from crewai import Agent, Task, Crew
-from crewai import Flow
-from crewai.flow.flow import listen, start, and_, or_, router
-
-# Agents
-check_model_agent = Agent(
-  config=agents_config['check_model_agent'],
-)
-
-search_model_agent = Agent(
-  config=agents_config['search_model_agent'],
-)
-
-interpretation_agent = Agent(
-  config=agents_config['interpretation_agent'],
-)
-
-generate_info_report_agent = Agent(
-  config=agents_config['generate_info_report_agent'],
-)
-
-search_involved_models_agent = Agent(
-  config=agents_config['search_involved_models_agent'],
-)
-
-solution_design_agent = Agent(
-  config=agents_config['solution_design_agent'],
-)
-
-concilation_and_testing_agent = Agent(
-  config=agents_config['concilation_and_testing_agent'],
-)
-
-## Tasks
-check_model_task = Task(
-  config=tasks_config['check_model_task'],
-  agent=check_model_agent
-)
-
-search_model_task = Task(
-  config=tasks_config['search_model_task'],
-  agent=search_model_agent
-)
-
-interpretation_task = Task(
-  config=tasks_config['interpretation_task'],
-  agent=interpretation_agent
-)
-
-generate_info_report_task = Task(
-  config=tasks_config['generate_info_report_task'],
-  agent=generate_info_report_agent
-)
-
-search_models_impacted_task = Task(
-  config=tasks_config['search_models_impacted_task'],
-  agent=generate_info_report_agent
-)
-
-search_models_needed_task = Task(
-  config=tasks_config['search_models_needed_task'],
-  agent=generate_info_report_agent
-)
-
-solution_design_task = Task(
-  config=tasks_config['solution_design_task'],
-  agent=solution_design_agent
-)
-
-solution_design_models_impacted_task = Task(
-  config=tasks_config['solution_design_models_impacted_task'],
-  agent=solution_design_agent
-)
-
-concilation_and_testing_task = Task(
-  config=tasks_config['concilation_and_testing_task'],
-  agent=concilation_and_testing_agent
-)
-
-# Crews
-check_model_crew = Crew(agents = [check_model_agent], tasks = [check_model_task], verbose = True)
-search_model_crew = Crew(agents = [search_model_agent], tasks = [search_model_task], verbose = True)
-interpretation_crew = Crew(agents = [interpretation_agent], tasks = [interpretation_task], verbose = True)
-
-generate_info_report_crew = Crew(agents = [generate_info_report_agent], tasks = [generate_info_report_task], verbose = True)
-
-search_models_impacted_task_crew = Crew(agents = [search_involved_models_agent], tasks = [search_models_impacted_task], verbose = True)
-search_models_needed_task_crew = Crew(agents = [search_involved_models_agent], tasks = [search_models_needed_task], verbose = True)
-
-solution_design_crew = Crew(agents = [solution_design_agent], tasks = [solution_design_task], verbose = True)
-solution_design_models_impacted_crew = Crew(agents = [solution_design_agent], tasks = [solution_design_models_impacted_task], verbose = True)
-
-concilation_and_testing_crew = Crew(agents = [concilation_and_testing_agent], tasks = [concilation_and_testing_task], verbose = True)
 
 import nest_asyncio
 nest_asyncio.apply()
 
 class dbtChatFlow(Flow):
-    def __init__(self, custom_llm=None):
+    def __init__(self, files, custom_llm=None):
         super().__init__()
-        
-        if custom_llm:
-            self.update_agents_with_llm(custom_llm)
-            print('using custom llm')
+        self.files = files
+        self.custom_llm = custom_llm
+        self.agents_config, self.tasks_config = update_tasks_and_agents_config(files)
+        self._initialize_agents_and_tasks
+        self._initialize_crews()
 
-    def update_agents_with_llm(self, custom_llm):
-        global check_model_agent, search_model_agent, interpretation_agent, generate_info_report_agent
-        global search_involved_models_agent, solution_design_agent, concilation_and_testing_agent
-        
-        check_model_agent = Agent(
-            config=agents_config['check_model_agent'],
-            llm=custom_llm
-        )
+    def _initialize_agents_and_tasks(self):
+        self.check_model_agent = Agent(config=self.agents_config['check_model_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['check_model_agent'])
+        self.search_model_agent = Agent(config=self.agents_config['search_model_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['search_model_agent'])
+        self.interpretation_agent = Agent(config=self.agents_config['interpretation_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['interpretation_agent'])
+        self.generate_info_report_agent = Agent(config=self.agents_config['generate_info_report_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['generate_info_report_agent'])
+        self.search_involved_models_agent = Agent(config=self.agents_config['search_involved_models_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['search_involved_models_agent'])
+        self.solution_design_agent = Agent(config=self.agents_config['solution_design_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['solution_design_agent'])
+        self.concilation_and_testing_agent = Agent(config=self.agents_config['concilation_and_testing_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['concilation_and_testing_agent'])
 
-        search_model_agent = Agent(
-            config=agents_config['search_model_agent'],
-            llm=custom_llm
-        )
+        self.check_model_task = Task(config=self.tasks_config['check_model_task'], agent=self.check_model_agent)
+        self.search_model_task = Task(config=self.tasks_config['search_model_task'], agent=self.search_model_agent)
+        self.interpretation_task = Task(config=self.tasks_config['interpretation_task'], agent=self.interpretation_agent)
+        self.generate_info_report_task = Task(config=self.tasks_config['generate_info_report_task'], agent=self.generate_info_report_agent)
+        self.search_models_impacted_task = Task(config=self.tasks_config['search_models_impacted_task'], agent=self.search_involved_models_agent)
+        self.search_models_needed_task = Task(config=self.tasks_config['search_models_needed_task'], agent=self.search_involved_models_agent)
+        self.solution_design_task = Task(config=self.tasks_config['solution_design_task'], agent=self.solution_design_agent)
+        self.solution_design_models_impacted_task = Task(config=self.tasks_config['solution_design_task'], agent=self.solution_design_agent)
+        self.concilation_and_testing_task = Task(config=self.tasks_config['concilation_and_testing_task'], agent=self.concilation_and_testing_agent)
 
-        interpretation_agent = Agent(
-            config=agents_config['interpretation_agent'],
-            llm=custom_llm
-        )
+    def _initialize_crews(self):
+        self.check_model_crew = Crew(agents=[self.check_model_agent], tasks=[self.check_model_task], verbose=True)
+        self.search_model_crew = Crew(agents=[self.search_model_agent], tasks=[self.search_model_task], verbose=True)
+        self.interpretation_crew = Crew(agents=[self.interpretation_agent], tasks=[self.interpretation_task], verbose=True)
+        self.generate_info_report_crew = Crew(agents=[self.generate_info_report_agent], tasks=[self.generate_info_report_task], verbose=True)
 
-        generate_info_report_agent = Agent(
-            config=agents_config['generate_info_report_agent'],
-            llm=custom_llm
-        )
+        self.search_models_impacted_task_crew = Crew(agents=[self.search_involved_models_agent], tasks=[self.search_models_impacted_task], verbose=True)
+        self.search_models_needed_task_crew = Crew(agents=[self.search_involved_models_agent], tasks=[self.search_models_needed_task], verbose=True)
+        self.solution_design_crew = Crew(agents=[self.solution_design_agent], tasks=[self.solution_design_task], verbose=True)
+        self.solution_design_models_impacted_crew = Crew(agents=[self.generate_info_report_agent], tasks=[self.generate_info_report_task], verbose=True)
 
-        search_involved_models_agent = Agent(
-            config=agents_config['search_involved_models_agent'],
-            llm=custom_llm
-        )
-
-        solution_design_agent = Agent(
-            config=agents_config['solution_design_agent'],
-            llm=custom_llm
-        )
-
-        concilation_and_testing_agent = Agent(
-            config=agents_config['concilation_and_testing_agent'],
-            llm=custom_llm
-        )
+        self.concilation_and_testing_crew = Crew(agents=[self.concilation_and_testing_agent], tasks=[self.concilation_and_testing_task], verbose=True)
 
     @start()
     def check_model(self):
@@ -196,7 +97,7 @@ class dbtChatFlow(Flow):
         dbt_repo_knowledge_df = self.state["dbt_repo_knowledge_df"]
 
         lineage_df = create_rag_db.calculate_dbt_lineage(dbt_repo_knowledge_df)
-        check_model_ouput = check_model_crew.kickoff(inputs = {"request": request, "lineage": str(lineage_df)})
+        check_model_ouput = self.check_model_crew.kickoff(inputs = {"request": request, "lineage": str(lineage_df)})
         check_model_ouput_json =  eval(check_model_ouput.raw.replace("```json", "").replace("```", "").strip())
         
         self.state["check_model_ouput"] =check_model_ouput_json
@@ -228,7 +129,7 @@ class dbtChatFlow(Flow):
         identified_model_names, identified_model_lineage, identified_model_documents = retrieved_search_models
         request = self.state["request"]
         
-        search_impacted_models_ouput = search_model_crew.kickoff(
+        search_impacted_models_ouput = self.search_model_crew.kickoff(
             inputs={
                 "request": request,
                 "lineage": str(identified_model_lineage),
@@ -244,7 +145,7 @@ class dbtChatFlow(Flow):
     def interpret_prompt(self):
         request = self.state["request"]
 
-        interpretation = interpretation_crew.kickoff(inputs = {'request': request})
+        interpretation = self.interpretation_crew.kickoff(inputs = {'request': request})
         self.state["interpretation"] = interpretation
         return interpretation
 
@@ -260,7 +161,7 @@ class dbtChatFlow(Flow):
         request = self.state["request"]
         identified_model_documents = self.state["identified_model_documents"]
         
-        generate_info_report_ouput = generate_info_report_crew.kickoff(
+        generate_info_report_ouput = self.generate_info_report_crew.kickoff(
             inputs={
                 "request": request,
                 "search_impacted_models_ouput": str(search_impacted_models_ouput),
@@ -279,7 +180,7 @@ class dbtChatFlow(Flow):
 
         lineage_df = create_rag_db.calculate_dbt_lineage(dbt_repo_knowledge_df)
 
-        search_needed_models_for_change_ouput = search_models_needed_task_crew.kickoff(
+        search_needed_models_for_change_ouput = self.search_models_needed_task_crew.kickoff(
             inputs={
                 "request": request,
                 "identified_model": str(check_model_ouput_json['identified_model']),
@@ -299,7 +200,7 @@ class dbtChatFlow(Flow):
 
         lineage_df = create_rag_db.calculate_dbt_lineage(dbt_repo_knowledge_df)
 
-        search_models_impacted_by_change_ouput = search_models_impacted_task_crew.kickoff(
+        search_models_impacted_by_change_ouput = self.search_models_impacted_task_crew.kickoff(
             inputs={
                 "request": request,
                 "identified_model": str(check_model_ouput_json['identified_model']),
@@ -362,7 +263,7 @@ class dbtChatFlow(Flow):
         dbt_repo_knowledge_df = self.state["dbt_repo_knowledge_df"]
 
         lineage_df = create_rag_db.calculate_dbt_lineage(dbt_repo_knowledge_df)
-        design_solution_main_model_output = solution_design_crew.kickoff(
+        design_solution_main_model_output = self.solution_design_crew.kickoff(
             inputs={
                 "request": request,
                 "identified_model_documents": str(identified_model_documents),
@@ -383,7 +284,7 @@ class dbtChatFlow(Flow):
         dbt_repo_knowledge_df = self.state["dbt_repo_knowledge_df"]
 
         lineage_df = create_rag_db.calculate_dbt_lineage(dbt_repo_knowledge_df)
-        design_solution_impacted_models_output = solution_design_models_impacted_crew.kickoff(
+        design_solution_impacted_models_output = self.solution_design_models_impacted_crew.kickoff(
             inputs={
                 "request": request,
                 "design_solution_main_model_ouput": str(design_solution_main_model_ouput),
@@ -403,7 +304,7 @@ class dbtChatFlow(Flow):
         dbt_repo_knowledge_df = self.state["dbt_repo_knowledge_df"]
     
         lineage_df = create_rag_db.calculate_dbt_lineage(dbt_repo_knowledge_df)
-        concilation_and_testing_output = concilation_and_testing_crew.kickoff(
+        concilation_and_testing_output = self.concilation_and_testing_crew.kickoff(
             inputs={
                 "request": request,
                 "design_solution_main_model_ouput": str(design_solution_main_model_ouput),
