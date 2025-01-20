@@ -29,10 +29,6 @@ from crewai import Agent, Task, Crew
 from crewai import Flow
 from crewai.flow.flow import listen, start, and_, or_, router
 
-files = {
-    'agents': '../config/agents.yml',
-    'tasks': '../config/tasks.yml'
-}
 
 def update_tasks_and_agents_config(files):
     # Load configurations from YAML files
@@ -60,6 +56,7 @@ class dbtChatFlow(Flow):
         self._initialize_crews()
 
     def _initialize_agents_and_tasks(self):
+        print(self.agents_config)
         self.check_model_agent = Agent(config=self.agents_config['check_model_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['check_model_agent'])
         self.search_model_agent = Agent(config=self.agents_config['search_model_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['search_model_agent'])
         self.interpretation_agent = Agent(config=self.agents_config['interpretation_agent'], llm=self.custom_llm) if self.custom_llm else Agent(config=self.agents_config['interpretation_agent'])
