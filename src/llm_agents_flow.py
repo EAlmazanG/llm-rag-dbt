@@ -144,6 +144,50 @@ import nest_asyncio
 nest_asyncio.apply()
 
 class dbtChatFlow(Flow):
+    def __init__(self, custom_llm=None):
+        super().__init__()
+        
+        if custom_llm:
+            self.update_agents_with_llm(custom_llm)
+
+    def update_agents_with_llm(self, custom_llm):
+        global check_model_agent, search_model_agent, interpretation_agent, generate_info_report_agent
+        global search_involved_models_agent, solution_design_agent, concilation_and_testing_agent
+        
+        check_model_agent = Agent(
+            config=agents_config['check_model_agent'],
+            llm=custom_llm
+        )
+
+        search_model_agent = Agent(
+            config=agents_config['search_model_agent'],
+            llm=custom_llm
+        )
+
+        interpretation_agent = Agent(
+            config=agents_config['interpretation_agent'],
+            llm=custom_llm
+        )
+
+        generate_info_report_agent = Agent(
+            config=agents_config['generate_info_report_agent'],
+            llm=custom_llm
+        )
+
+        search_involved_models_agent = Agent(
+            config=agents_config['search_involved_models_agent'],
+            llm=custom_llm
+        )
+
+        solution_design_agent = Agent(
+            config=agents_config['solution_design_agent'],
+            llm=custom_llm
+        )
+
+        concilation_and_testing_agent = Agent(
+            config=agents_config['concilation_and_testing_agent'],
+            llm=custom_llm
+        )
 
     @start()
     def check_model(self):
