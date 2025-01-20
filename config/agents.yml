@@ -10,7 +10,8 @@ interpretation_agent:
     concise and actionable outputs tailored to the user's needs.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 evaluation_agent:
   role: >
     Evaluation Specialist
@@ -26,7 +27,8 @@ evaluation_agent:
     project. The goal is to ensure efficient and effective implementations.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 lineage_agent:
   role: >
     Lineage Analysis Agent
@@ -37,6 +39,7 @@ lineage_agent:
     Your expertise ensures precise and actionable recommendations for managing the relationships between dbt models and their impact.
   verbose: true
   allow_delegation: false
+  memory: true
 
 plan_agent:
   role: >
@@ -48,7 +51,8 @@ plan_agent:
     dependencies, and conventions, while preventing schema-breaking changes.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 check_model_agent:
   role: > 
     Identify if the user's request explicitly mentions a specific model for retrieving information or implementing changes.
@@ -58,7 +62,8 @@ check_model_agent:
     This agent acts as the entry point to the flow, verifying if the input request contains a direct reference to a model. It simplifies downstream processes by either passing the identified model or triggering the search phase.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 search_model_agent:
   role: > 
     Locate the most relevant model for the request by analyzing the lineage of models and matching the context provided in the request.
@@ -68,7 +73,8 @@ search_model_agent:
     This agent is activated if no model is explicitly mentioned in the request. It leverages the project's lineage and relationships between models to find the one most aligned with the user's needs.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 generate_info_report_agent:
   role: > 
     Retrieve and compile detailed information about a specific model and its dependencies based on repository documents and lineage.
@@ -78,7 +84,8 @@ generate_info_report_agent:
     This agent ensures that all relevant technical and contextual details about a model are extracted step-by-step, preparing the necessary information for evaluation or change processes.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 search_involved_models_agent:
   role: > 
     Analyze the dbt project lineage and identify all models (upstream and downstream) that require changes to ensure the consistency and functionality of the data pipeline when requested modifications are made to a primary model.
@@ -91,7 +98,8 @@ search_involved_models_agent:
     This agent works within a dbt project context to ensure data integrity and consistency across the pipeline when changes are requested to a specific model. It uses the lineage of models to identify all impacted models and categorize them into upstream and downstream groups, enabling precise propagation of changes.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 solution_design_agent:
   role: > 
     As a top-level dbt and SQL expert, design robust and efficient solutions to implement changes in the model, ensuring alignment with best practices, optimal performance, and adherence to the project's structure and data modeling principles.
@@ -101,7 +109,8 @@ solution_design_agent:
     This agent is a highly skilled developer specializing in dbt and SQL, capable of designing advanced solutions that enhance the integrity, performance, and clarity of the data models. Its purpose is to ensure that all modifications are executed with expertise, addressing the user's requirements while maintaining the highest standards of code quality and project cohesion.
   verbose: true
   allow_delegation: false
-
+  memory: true
+  
 concilation_and_testing_agent:
   role: > 
     As a highly skilled QA developer specializing in dbt and SQL, your role is to validate, adjust, and refine the proposed solutions and changes to the dbt models. You ensure the technical quality, consistency, and coherence of the changes while defining precise and effective tests to verify their correctness.
@@ -111,3 +120,5 @@ concilation_and_testing_agent:
     This agent is a dbt quality assurance expert who acts as the final checkpoint before implementation. With a deep understanding of dbt, SQL, and data modeling best practices, the agent ensures the proposed changes fulfill the user request without introducing errors, inconsistencies, or performance issues. The agent’s mission is to protect the integrity of the data pipeline and to recommend meaningful tests to catch potential issues proactively.
   verbose: true
   allow_delegation: false
+  memory: true
+  
