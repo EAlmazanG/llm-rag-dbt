@@ -392,7 +392,7 @@ solution_design_models_impacted_task:
       - Request, Original user request: 
         {request}
       - Solutions and changes that are going to be made to the main affected model:
-        {design_solution_main_model_ouput}
+        {design_solution_main_model_output}
       - Models affected that must be adjusted:
         {search_models_impacted_by_change_ouput}
       - Info of this models that you must have into account to design a proper solution:

@@ -71,7 +71,7 @@ class dbtChatFlow(Flow):
         self.search_models_impacted_task = Task(config=self.tasks_config['search_models_impacted_task'], agent=self.search_involved_models_agent)
         self.search_models_needed_task = Task(config=self.tasks_config['search_models_needed_task'], agent=self.search_involved_models_agent)
         self.solution_design_task = Task(config=self.tasks_config['solution_design_task'], agent=self.solution_design_agent)
-        self.solution_design_models_impacted_task = Task(config=self.tasks_config['solution_design_task'], agent=self.solution_design_agent)
+        self.solution_design_models_impacted_task = Task(config=self.tasks_config['solution_design_models_impacted_task'], agent=self.solution_design_agent)
         self.concilation_and_testing_task = Task(config=self.tasks_config['concilation_and_testing_task'], agent=self.concilation_and_testing_agent)
 
     def _initialize_crews(self):
