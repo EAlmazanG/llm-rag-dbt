@@ -269,13 +269,13 @@ class dbtChatFlow(Flow):
             }
         )
         
-        self.state["design_solution_main_model_ouput"] = design_solution_main_model_output
+        self.state["design_solution_main_model_output"] = design_solution_main_model_output
         return design_solution_main_model_output
 
     @listen(and_(design_solution_main_model, retrieve_context_for_solution_impacted_models))
     def design_solution_impacted_models(self, retrieve_context_for_solution_impacted_models):
         request = self.state["request"]
-        design_solution_main_model_ouput = self.state["design_solution_main_model_ouput"]
+        design_solution_main_model_output = self.state["design_solution_main_model_output"]
         search_models_impacted_by_change_ouput = self.state["search_models_impacted_by_change_ouput"]
         dbt_repo_knowledge_df = self.state["dbt_repo_knowledge_df"]
 
@@ -283,7 +283,7 @@ class dbtChatFlow(Flow):
         design_solution_impacted_models_output = self.solution_design_models_impacted_crew.kickoff(
             inputs={
                 "request": request,
-                "design_solution_main_model_ouput": str(design_solution_main_model_ouput),
+                "design_solution_main_model_output": str(design_solution_main_model_output),
                 "search_models_impacted_by_change_ouput": str(search_models_impacted_by_change_ouput),
                 "retrieve_context_for_solution_impacted_models": str(retrieve_context_for_solution_impacted_models),
                 "lineage_df": str(lineage_df)
@@ -295,7 +295,7 @@ class dbtChatFlow(Flow):
     @listen(and_(design_solution_main_model, design_solution_impacted_models))
     def concilation_and_testing(self):
         request = self.state["request"]
-        design_solution_main_model_ouput = self.state["design_solution_main_model_ouput"]
+        design_solution_main_model_output = self.state["design_solution_main_model_output"]
         design_solution_impacted_models_output = self.state["design_solution_impacted_models_output"]
         dbt_repo_knowledge_df = self.state["dbt_repo_knowledge_df"]
     
@@ -303,7 +303,7 @@ class dbtChatFlow(Flow):
         concilation_and_testing_output = self.concilation_and_testing_crew.kickoff(
             inputs={
                 "request": request,
-                "design_solution_main_model_ouput": str(design_solution_main_model_ouput),
+                "design_solution_main_model_output": str(design_solution_main_model_output),
                 "design_solution_impacted_models_output": str(design_solution_impacted_models_output),
                 "lineage_df": str(lineage_df)
             }

@@ -446,7 +446,7 @@ concilation_and_testing_task:
       - Request, Original user request: 
         {request}
       - Solutions and changes that are going to be made to the main affected model:
-        {design_solution_main_model_ouput}
+        {design_solution_main_model_output}
       - Solutions and changes that are going to be made to the affected models to maintain consistency and ensure that the changes are well propagated:
         {design_solution_impacted_models_output}
       - Lineage of the dbt project:
