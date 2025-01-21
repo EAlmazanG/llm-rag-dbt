@@ -52,7 +52,7 @@ class dbtChatFlow(Flow):
         self.files = files
         self.custom_llm = custom_llm
         self.agents_config, self.tasks_config = update_tasks_and_agents_config(files)
-        self._initialize_agents_and_tasks
+        self._initialize_agents_and_tasks()
         self._initialize_crews()
 
     def _initialize_agents_and_tasks(self):
@@ -83,7 +83,7 @@ class dbtChatFlow(Flow):
         self.search_models_impacted_task_crew = Crew(agents=[self.search_involved_models_agent], tasks=[self.search_models_impacted_task], verbose=True)
         self.search_models_needed_task_crew = Crew(agents=[self.search_involved_models_agent], tasks=[self.search_models_needed_task], verbose=True)
         self.solution_design_crew = Crew(agents=[self.solution_design_agent], tasks=[self.solution_design_task], verbose=True)
-        self.solution_design_models_impacted_crew = Crew(agents=[self.generate_info_report_agent], tasks=[self.generate_info_report_task], verbose=True)
+        self.solution_design_models_impacted_crew = Crew(agents=[self.solution_design_agent], tasks=[self.solution_design_models_impacted_task], verbose=True)
 
         self.concilation_and_testing_crew = Crew(agents=[self.concilation_and_testing_agent], tasks=[self.concilation_and_testing_task], verbose=True)
 
