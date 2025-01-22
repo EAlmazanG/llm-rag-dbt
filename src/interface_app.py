@@ -81,8 +81,9 @@ def render_sidebar():
             owner, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
             repo_elements = generate_knowledge.list_online_repo_structure(owner, repo_name)
             print(repo_elements)
-            dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements
-            dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_df, dbt_project_df)
+            print(repo_path)
+            dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, True, repo_path)
+            dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)
             files = {
                 'agents': '../config/agents.yml',
                 'tasks': '../config/tasks.yml'

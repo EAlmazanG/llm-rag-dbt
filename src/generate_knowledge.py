@@ -723,13 +723,6 @@ def generate_tests_description(llm, row):
     return row['description']
 
 def generate_knowledge_from_repo_elements(repo_elements, is_online, repo_path):
-    add_repo_root_path()
-    import openai_setup
-    OPENAI_API_KEY = openai_setup.conf['key']
-    OPENAI_PROJECT = openai_setup.conf['project']
-    OPENAI_ORGANIZATION = openai_setup.conf['organization']
-    DEFAULT_LLM_MODEL = "gpt-4o-mini"
-
     repo_dbt_elements = select_dbt_elements_by_extension(repo_elements)
     repo_dbt_models = select_dbt_models(repo_dbt_elements)
     dbt_project_df = select_dbt_project_files(repo_dbt_elements)
@@ -756,6 +749,12 @@ def generate_knowledge_from_repo_elements(repo_elements, is_online, repo_path):
     dbt_models_df['has_macros'] = dbt_models_df['macros'].apply(lambda x: x is not None)
     dbt_models_enriched_df = enrich_dbt_models(dbt_models_df)
 
+    add_repo_root_path()
+    import openai_setup
+    OPENAI_API_KEY = openai_setup.conf['key']
+    OPENAI_PROJECT = openai_setup.conf['project']
+    OPENAI_ORGANIZATION = openai_setup.conf['organization']
+    DEFAULT_LLM_MODEL = "gpt-4o-mini"
     llm = ChatOpenAI(model=DEFAULT_LLM_MODEL, temperature=0.1, openai_api_key=OPENAI_API_KEY, openai_organization = OPENAI_ORGANIZATION)
     dbt_models_enriched_df['model_description'] = dbt_models_enriched_df.progress_apply(
         lambda row: generate_model_description(llm, row),
