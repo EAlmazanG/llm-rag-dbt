@@ -756,9 +756,6 @@ def generate_knowledge_from_repo_elements(repo_elements, is_online, repo_path):
     dbt_models_df['has_macros'] = dbt_models_df['macros'].apply(lambda x: x is not None)
     dbt_models_enriched_df = enrich_dbt_models(dbt_models_df)
 
-    from langchain_openai import ChatOpenAI
-    from langchain.schema import HumanMessage
-
     llm = ChatOpenAI(model=DEFAULT_LLM_MODEL, temperature=0.1, openai_api_key=OPENAI_API_KEY, openai_organization = OPENAI_ORGANIZATION)
     dbt_models_enriched_df['model_description'] = dbt_models_enriched_df.progress_apply(
         lambda row: generate_model_description(llm, row),
