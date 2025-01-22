@@ -92,6 +92,14 @@ def select_dbt_project_files(repo_elements):
     repo_df["extension"] = repo_df["path"].apply(lambda x: "." + x.split(".")[-1])
     return repo_df
 
+def generate_dbt_models_df(repo_dbt_models):
+    data = []
+    for path in repo_dbt_models:
+        name = os.path.basename(path)
+        extension = os.path.splitext(name)[1]
+        data.append({'path': path, 'name': name, 'extension': extension})
+    return pd.DataFrame(data)
+
 def get_base_url(repo_url):
     if repo_url.startswith("https://github.com"):
         parts = repo_url.replace("https://github.com/", "").split("/")
@@ -713,3 +721,80 @@ def generate_tests_description(llm, row):
     if row['is_test']:
         return generate_test_code_description(llm, row['code'])
     return row['description']
+
+def generate_knowledge_from_repo_elements(repo_elements, is_online, repo_path):
+    add_repo_root_path()
+    import openai_setup
+    OPENAI_API_KEY = openai_setup.conf['key']
+    OPENAI_PROJECT = openai_setup.conf['project']
+    OPENAI_ORGANIZATION = openai_setup.conf['organization']
+    DEFAULT_LLM_MODEL = "gpt-4o-mini"
+
+    repo_dbt_elements = select_dbt_elements_by_extension(repo_elements)
+    repo_dbt_models = select_dbt_models(repo_dbt_elements)
+    dbt_project_df = select_dbt_project_files(repo_dbt_elements)
+    dbt_models_df = generate_dbt_models_df(repo_dbt_models)
+    dbt_project_df, dbt_models_df = move_snapshots_to_models(dbt_project_df, dbt_models_df)
+    dbt_models_df = add_model_code_column(dbt_models_df, is_online = True, online_dbt_repo = repo_path)
+    dbt_models_df = add_config_column(dbt_models_df)
+    dbt_models_df['materialized'] = dbt_models_df['config'].apply(extract_materialized_value)
+    dbt_models_df['is_snapshot'] = dbt_models_df['config'].apply(check_is_snapshot)
+    dbt_models_df['materialized'] = dbt_models_df.apply(lambda row: 'snapshot' if row['is_snapshot'] else row['materialized'] ,1)
+    dbt_models_df['has_jinja_code'] = dbt_models_df['sql_code'].apply(contains_jinja_code)
+    dbt_models_df['model_category'] = dbt_models_df['name'].apply(categorize_model)
+    dbt_models_df['vertical'] = dbt_models_df.apply(lambda row: get_vertical(row['name'], row['model_category']), axis=1)
+    dbt_models_df = assign_yml_rows_to_each_model(dbt_models_df)
+    dbt_models_df['tests'] = dbt_models_df['yml_code'].apply(extract_tests)
+    dbt_models_df['has_tests'] = dbt_models_df['tests'].apply(lambda x: x is not None)
+    dbt_models_df['sql_ids'] = dbt_models_df['sql_code'].apply(extract_ids_from_query)
+    dbt_models_df['has_select_all_in_last_select'] = dbt_models_df['sql_code'].apply(has_select_all_in_last_select)
+    dbt_models_df['has_group_by'] = dbt_models_df['sql_code'].apply(has_group_by)
+    dbt_models_df['primary_key'] = dbt_models_df['tests'].apply(find_primary_key)
+    dbt_models_df['filters'] = dbt_models_df['sql_code'].apply(extract_sql_filters)
+    dbt_models_df['is_filtered'] = dbt_models_df['filters'].apply(lambda x: x is not None)
+    dbt_models_df['macros'] = dbt_models_df['sql_code'].apply(extract_dbt_macros)
+    dbt_models_df['has_macros'] = dbt_models_df['macros'].apply(lambda x: x is not None)
+    dbt_models_enriched_df = enrich_dbt_models(dbt_models_df)
+
+    from langchain_openai import ChatOpenAI
+    from langchain.schema import HumanMessage
+
+    llm = ChatOpenAI(model=DEFAULT_LLM_MODEL, temperature=0.1, openai_api_key=OPENAI_API_KEY, openai_organization = OPENAI_ORGANIZATION)
+    dbt_models_enriched_df['model_description'] = dbt_models_enriched_df.progress_apply(
+        lambda row: generate_model_description(llm, row),
+        axis=1
+    )
+    dbt_models_enriched_df['jinja_description'] = dbt_models_enriched_df.progress_apply(
+        lambda row: generate_jinja_description(llm, row),
+        axis=1
+    )
+    dbt_project_df = add_project_code_column(dbt_project_df, is_online, online_dbt_repo = repo_path)
+    dbt_project_df['is_seed'] = dbt_project_df['path'].apply(is_seed)
+    dbt_project_df['is_macro'] = dbt_project_df['path'].apply(is_macro)
+    dbt_project_df['is_test'] = dbt_project_df['path'].apply(is_test)
+    dbt_project_df['packages'] = dbt_project_df.apply(extract_packages, 1)
+    dbt_project_df['description'] = None
+    dbt_project_df['description'] = dbt_project_df.progress_apply(
+        lambda row: generate_packages_description(llm, row),
+        axis=1
+    )
+    dbt_project_df['description'] = dbt_project_df.progress_apply(
+        lambda row: generate_macro_description(llm, row),
+        axis=1
+    )
+    dbt_project_df['description'] = dbt_project_df.progress_apply(
+        lambda row: generate_dbt_config_summary(llm, row),
+        axis=1
+    )
+    dbt_project_df['description'] = dbt_project_df.progress_apply(
+        lambda row: generate_tests_description(llm, row),
+        axis=1
+    )
+    _, repo_name = extract_owner_and_repo(repo_path)
+    print(repo_name)
+
+    dbt_models_enriched_df.to_csv('../data/dbt_models_' + repo_name + '.csv', index=False)
+    dbt_project_df.to_csv('../data/dbt_project_' + repo_name + '.csv', index=False)
+
+    return dbt_models_enriched_df, dbt_project_df
+        

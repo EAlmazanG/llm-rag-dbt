@@ -43,7 +43,6 @@ def render_sidebar():
     
     if repo_option == "Already used":
         uploaded_file = st.sidebar.file_uploader("Select processed models file")
-        is_online = False
 
         CHROMADB_DIRECTORY = '../chromadb'
         COLLECTION_NAME = "my_chromadb" 
@@ -70,19 +69,18 @@ def render_sidebar():
                 enable_chat = True
 
     elif repo_option == "Local":
-        repo_path = st.sidebar.text_input("Enter repo URL")
-        is_online = False
-        
+        repo_path = st.sidebar.text_input("Enter repo folder path")
+        repo_elements = generate_knowledge.list_local_repo_structure(repo_path)
+        print(repo_elements)
 
 
 
     elif repo_option == "Online":
-        repo_path = st.sidebar.text_input("Enter repo URL")
-        is_online = True
+        repo_path = st.sidebar.text_input("Enter repo URL", 'https://github.com/dbt-labs/jaffle-shop')
 
-        _, repo_name = generate_knowledge.extract_owner_and_repo('https://github.com/dbt-labs/jaffle-shop')
-
-
+        owner, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
+        repo_elements = generate_knowledge.list_online_repo_structure(owner, repo_name)
+        print(repo_elements)
 
 
 
