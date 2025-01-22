@@ -6,11 +6,32 @@ import json
 import os
 import sys
 import importlib
-from streamlit_extras.file_browser import file_browser
+import yaml
+import sqlparse
+import requests
+from langchain.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 sys.path.append(os.path.abspath(os.path.join('..')))
+from src import generate_knowledge
+from src import create_rag_db
+from src import llm_chain_tools
+from src.enhanced_retriever import EnhancedRetriever
+
+generate_knowledge.add_repo_root_path()
+import openai_setup
+
+OPENAI_API_KEY = openai_setup.conf['key']
+OPENAI_PROJECT = openai_setup.conf['project']
+OPENAI_ORGANIZATION = openai_setup.conf['organization']
+DEFAULT_LLM_MODEL = "gpt-4o-mini"
+
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
+
 
 def render_sidebar():
+    enable_chat = False
     st.sidebar.title("⚙️ Config your dbt project repo and LLM")
     
     st.sidebar.markdown("---")
@@ -21,19 +42,49 @@ def render_sidebar():
     )
     
     if repo_option == "Already used":
-        knowledge_file = st.sidebar.file_uploader("Select processed repo file")
+        uploaded_file = st.sidebar.file_uploader("Select processed models file")
         is_online = False
-        print(knowledge_file)
+
+        CHROMADB_DIRECTORY = '../chromadb'
+        COLLECTION_NAME = "my_chromadb" 
+
+        langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
+        loaded_vectorstore = Chroma(
+            collection_name=COLLECTION_NAME,
+            persist_directory=CHROMADB_DIRECTORY,
+            embedding_function=langchain_openai_embeddings
+        )
+
+        if uploaded_file is not None:
+            dbt_models_df = pd.read_csv(uploaded_file)
+            file_name = uploaded_file.name
+            match = re.match(r"dbt_models_(.+)\.csv", file_name)
+            if match:
+                repo_name = match.group(1)
+                dbt_project_df = pd.read_csv('../data/dbt_project_' + str(repo_name) + '.csv')
+                dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_df, dbt_project_df)
+                files = {
+                    'agents': '../config/agents.yml',
+                    'tasks': '../config/tasks.yml'
+                }
+                enable_chat = True
 
     elif repo_option == "Local":
-        repo_path = file_browser("Select local repo folder")
+        repo_path = st.sidebar.text_input("Enter repo URL")
         is_online = False
-        print(repo_path)
+        
+
+
 
     elif repo_option == "Online":
         repo_path = st.sidebar.text_input("Enter repo URL")
-        is_online = False
-        print(repo_path)
+        is_online = True
+
+        _, repo_name = generate_knowledge.extract_owner_and_repo('https://github.com/dbt-labs/jaffle-shop')
+
+
+
+
 
     st.sidebar.markdown("---")
     
@@ -42,11 +93,20 @@ def render_sidebar():
         ["Local LLM with LM Studio", "OpenAI"]
     )
     
-    if llm_option == "Local":
+    if llm_option == "OpenAI":
+
+
+
+        langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
+        langchain_openai_llm = ChatOpenAI(model=DEFAULT_LLM_MODEL, temperature=0.1, openai_api_key=OPENAI_API_KEY, openai_organization = OPENAI_ORGANIZATION)
+
+    else:
         model_option = st.sidebar.selectbox(
             "Available models",
             ["model-1", "model-2"]
         )
+    return enable_chat
+
 
 def render_chat():
     st.markdown(
@@ -204,8 +264,11 @@ def init_session():
 
 def run_app():
     init_session()
-    render_sidebar()
-    render_chat()
+    enable_chat = render_sidebar()
+    if enable_chat:
+        render_chat()
+    else:
+        st.title("Please select the dbt project repo and LLM config to start")
 
 if __name__ == "__main__":
     run_app()
