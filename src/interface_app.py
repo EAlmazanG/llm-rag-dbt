@@ -53,7 +53,8 @@ def create_chromadb(dbt_repo_knowledge_df, repo_path):
 
 def load_chroma_db(repo_name):
     CHROMADB_DIRECTORY = '../chromadb'
-    COLLECTION_NAME = repo_name
+    #COLLECTION_NAME = repo_name
+    COLLECTION_NAME = "my_chromadb"
 
     langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
     loaded_vectorstore = Chroma(
@@ -61,7 +62,7 @@ def load_chroma_db(repo_name):
         persist_directory=CHROMADB_DIRECTORY,
         embedding_function=langchain_openai_embeddings
     )
-
+    print("chromadb for " + repo_name + " successfully loaded!", CHROMADB_DIRECTORY, COLLECTION_NAME)
     return loaded_vectorstore
 
 def load_repo(repo_option, uploaded_file = None, repo_path = None):
@@ -138,8 +139,10 @@ def render_llm_options():
             "Available models",
             ["model-1", "model-2"]
         )
-
-    return llm_option, model_option
+    if st.sidebar.button("Load LLM"):
+        return True, llm_option, model_option
+    else:
+        return False, None, None
 
 def render_sidebar():
     enable_chat = False
@@ -329,12 +332,13 @@ def run_app():
     init_session()
     enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore = render_sidebar()
     if enable_model_selection:
-        llm_option, model_option = render_llm_options()
-        enable_chat, flow = create_agents_flow()
-        if enable_chat:
-            render_chat()
-        else:
-            st.title("Please select the  LLM config to start")
+        enable_flow, llm_option, model_option = render_llm_options()
+        if enable_flow:
+            enable_chat, flow = create_agents_flow(llm_option, model_option)
+            if enable_chat:
+                render_chat()
+            else:
+                st.title("Please select the  LLM config to start")
     else:
         st.title("Please select the dbt project repo and LLM config to start")
 
