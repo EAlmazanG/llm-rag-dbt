@@ -765,7 +765,7 @@ def generate_knowledge_from_repo_elements(repo_elements, is_online, repo_path):
         lambda row: generate_jinja_description(llm, row),
         axis=1
     )
-    dbt_project_df = add_project_code_column(dbt_project_df, is_online, online_dbt_repo = repo_path)
+    dbt_project_df = add_project_code_column(dbt_project_df, is_online, repo_url = repo_path)
     dbt_project_df['is_seed'] = dbt_project_df['path'].apply(is_seed)
     dbt_project_df['is_macro'] = dbt_project_df['path'].apply(is_macro)
     dbt_project_df['is_test'] = dbt_project_df['path'].apply(is_test)
