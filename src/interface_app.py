@@ -100,49 +100,57 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
             loaded_vectorstore = load_chroma_db(repo_name)
             enable_model_selection = True
 
-    return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore
+    return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore, repo_name
 
 def create_agents_flow(llm_option, model_option):
     files = {
         'agents': '../config/agents.yml',
         'tasks': '../config/tasks.yml'
     }
-    
-    if llm_option == "OpenAI":
-        flow = None
-    else:
-        flow = None
-
-    return True, flow 
+    if st.session_state.enable_flow:
+        if llm_option == "OpenAI":
+            flow = None
+        else:
+            flow = None
+        st.session_state.flow = flow
+        st.session_state.flow = flow
 
 def render_llm_options():
-    st.sidebar.markdown("---")
 
-    llm_option = st.sidebar.selectbox(
-        "LLM run: ",
-        ["Local LLM with LM Studio", "OpenAI"]
-    )
-    
-    if llm_option == "OpenAI":
-        print('hello!')
-        model_option = st.sidebar.selectbox(
-            "Available models",
-            ["gpt-4o-mini", "gpt-4o"]
+    if st.session_state.enable_model_selection and not st.session_state.enable_flow:
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("## ⚡ LLM Configuration")
+            
+        llm_option = st.sidebar.selectbox(
+            "LLM run: ",
+            ["Local LLM with LM Studio", "OpenAI"]
         )
-        DEFAULT_LLM_MODEL = model_option
-        os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
-    else:
+        
+        if llm_option == "OpenAI":
+            print('hello!')
+            model_option = st.sidebar.selectbox(
+                "Available models",
+                ["gpt-4o-mini", "gpt-4o"]
+            )
+            DEFAULT_LLM_MODEL = model_option
+            os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
+        else:
 
 
 
-        model_option = st.sidebar.selectbox(
-            "Available models",
-            ["model-1", "model-2"]
+            model_option = st.sidebar.selectbox(
+                "Available models",
+                ["model-1", "model-2"]
         )
-    if st.sidebar.button("Load LLM"):
-        return True, llm_option, model_option
-    else:
-        return False, None, None
+        if st.sidebar.button("Load LLM"):
+            st.session_state.enable_flow = True
+            st.session_state.llm_option = llm_option
+            st.session_state.model_option = model_option
+            st.rerun()
+    elif st.session_state.enable_model_selection and st.session_state.enable_flow:
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("## ⚡ LLM Configuration")
+        st.sidebar.success(f"LLM loaded: {st.session_state.llm_option} - {st.session_state.model_option} ")
 
 def render_sidebar():
     st.sidebar.title("⚙️ Config your dbt project repo and LLM")
@@ -150,37 +158,45 @@ def render_sidebar():
     st.sidebar.markdown("---")
     if st.sidebar.button("🧹 Clean Config", type="primary", 
                         help="Delete all config and reboot the app"):
-        st.session_state.repo_loaded = False
-        st.session_state.llm_loaded = False
-        st.session_state.repo_config = None
-        st.session_state.llm_config = None
+        st.session_state.enable_model_selection = False
+        st.session_state.dbt_repo_knowledge_df = None
+        st.session_state.loaded_vectorstore = None
+        st.session_state.repo_name = None
+        st.session_state.llm_option = None
+        st.session_state.model_option = None
+        st.session_state.enable_flow = False
         st.session_state.flow = None
         st.rerun()
 
-    repo_option = st.sidebar.selectbox(
-        "Select dbt project repository",
-        ["Local", "Online", "Already used"]
-    )
-
+    if st.session_state.enable_model_selection:
+        st.sidebar.success(f"Repo loaded: {st.session_state.repo_name}")
     
-    if repo_option == "Already used":
-        uploaded_file = st.sidebar.file_uploader("Select processed models file")
-        repo_path = None
-    elif repo_option == "Local":
-        uploaded_file = None
-        repo_path = st.sidebar.text_input("Enter repo folder path")
-    elif repo_option == "Online":
-        uploaded_file = None
-        repo_path = st.sidebar.text_input("Enter repo URL", 'https://github.com/dbt-labs/jaffle-shop')
-
-    if st.sidebar.button("Load Repo") and (repo_path is not None or uploaded_file is not None):
-        with st.spinner("Loading repository..."):
-            enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore = load_repo(repo_option, uploaded_file, repo_path)
-            return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore
     else:
-        return False, None, None
+        repo_option = st.sidebar.selectbox(
+            "Select dbt project repository",
+            ["Local", "Online", "Already used"]
+        )
     
+        if repo_option == "Already used":
+            uploaded_file = st.sidebar.file_uploader("Select processed models file")
+            repo_path = None
+        elif repo_option == "Local":
+            uploaded_file = None
+            repo_path = st.sidebar.text_input("Enter repo folder path")
+        elif repo_option == "Online":
+            uploaded_file = None
+            repo_path = st.sidebar.text_input("Enter repo URL", 'https://github.com/dbt-labs/jaffle-shop')
 
+        if st.sidebar.button("Load Repo") and (repo_path is not None or uploaded_file is not None):
+            with st.spinner("Loading repository..."):
+                enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore, repo_name = load_repo(repo_option, uploaded_file, repo_path)
+                if enable_model_selection:
+                    st.session_state.repo_name = repo_name
+                    st.session_state.enable_model_selection = enable_model_selection
+                    st.session_state.dbt_repo_knowledge_df = dbt_repo_knowledge_df
+                    st.session_state.loaded_vectorstore = loaded_vectorstore
+                    st.rerun()
+    
 def render_chat():
     st.markdown(
         """
@@ -330,29 +346,37 @@ def handle_submit():
         st.rerun()
 
 def init_session():
-    if 'repo_loaded' not in st.session_state:
-        st.session_state.repo_loaded = False
-    if 'llm_loaded' not in st.session_state:
-        st.session_state.llm_loaded = False
-    if 'repo_config' not in st.session_state:
-        st.session_state.repo_config = None
-    if 'llm_config' not in st.session_state:
-        st.session_state.llm_config = None
+    if 'enable_model_selection' not in st.session_state:
+        st.session_state.enable_model_selection = False
+    if 'repo_name' not in st.session_state:
+        st.session_state.repo_name = None
+    if 'dbt_repo_knowledge_df' not in st.session_state:
+        st.session_state.dbt_repo_knowledge_df = None
+    if 'loaded_vectorstore' not in st.session_state:
+        st.session_state.loaded_vectorstore = None
+    if 'enable_flow' not in st.session_state:
+        st.session_state.enable_flow = False
+    if 'llm_option' not in st.session_state:
+        st.session_state.llm_option = None
+    if 'model_option' not in st.session_state:
+        st.session_state.model_option = None
     if 'flow' not in st.session_state:
         st.session_state.flow = None
+
 def run_app():
     init_session()
-    enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore = render_sidebar()
-    if enable_model_selection:
-        enable_flow, llm_option, model_option = render_llm_options()
-        if enable_flow:
-            enable_chat, flow = create_agents_flow(llm_option, model_option)
-            if enable_chat:
-                render_chat()
-            else:
-                st.title("Please select the  LLM config to start")
+    render_sidebar()
+    
+    if not st.session_state.repo_loaded:
+        st.title("ℹ️ Select a dbt repo to start")
+    
+    elif not st.session_state.llm_loaded:
+        render_llm_options()
+        st.title("ℹ️  Select LLM to continue")
     else:
-        st.title("Please select the dbt project repo and LLM config to start")
+        if not st.session_state.flow:
+            st.session_state.flow = create_agents_flow(...)
+        render_chat()
 
 if __name__ == "__main__":
     run_app()
