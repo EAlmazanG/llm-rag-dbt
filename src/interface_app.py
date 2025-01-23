@@ -145,11 +145,18 @@ def render_llm_options():
         return False, None, None
 
 def render_sidebar():
-    enable_chat = False
     st.sidebar.title("⚙️ Config your dbt project repo and LLM")
     
     st.sidebar.markdown("---")
-    
+    if st.sidebar.button("🧹 Clean Config", type="primary", 
+                        help="Delete all config and reboot the app"):
+        st.session_state.repo_loaded = False
+        st.session_state.llm_loaded = False
+        st.session_state.repo_config = None
+        st.session_state.llm_config = None
+        st.session_state.flow = None
+        st.rerun()
+
     repo_option = st.sidebar.selectbox(
         "Select dbt project repository",
         ["Local", "Online", "Already used"]
@@ -323,11 +330,16 @@ def handle_submit():
         st.rerun()
 
 def init_session():
-    if 'conversation' not in st.session_state:
-        st.session_state.conversation = []
-    if 'user_input_key' not in st.session_state:
-        st.session_state.user_input_key = ""
-
+    if 'repo_loaded' not in st.session_state:
+        st.session_state.repo_loaded = False
+    if 'llm_loaded' not in st.session_state:
+        st.session_state.llm_loaded = False
+    if 'repo_config' not in st.session_state:
+        st.session_state.repo_config = None
+    if 'llm_config' not in st.session_state:
+        st.session_state.llm_config = None
+    if 'flow' not in st.session_state:
+        st.session_state.flow = None
 def run_app():
     init_session()
     enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore = render_sidebar()
