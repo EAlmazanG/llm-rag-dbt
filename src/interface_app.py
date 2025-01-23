@@ -34,20 +34,9 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
 
 
-def render_sidebar():
-    enable_chat = False
-    st.sidebar.title("⚙️ Config your dbt project repo and LLM")
-    
-    st.sidebar.markdown("---")
-    
-    repo_option = st.sidebar.selectbox(
-        "Select dbt project repository",
-        ["Local", "Online", "Already used"]
-    )
-    
-    if repo_option == "Already used":
-        uploaded_file = st.sidebar.file_uploader("Select processed models file")
+def load_repo(repo_option, uploaded_file = None, repo_path = None):
 
+    if repo_option == "Already used":
         CHROMADB_DIRECTORY = '../chromadb'
         COLLECTION_NAME = "my_chromadb" 
 
@@ -75,52 +64,51 @@ def render_sidebar():
     elif repo_option == "Local":
         repo_path = st.sidebar.text_input("Enter repo folder path")
         repo_elements = generate_knowledge.list_local_repo_structure(repo_path)
-        print(repo_elements)
 
 
 
     elif repo_option == "Online":
-        repo_path = st.sidebar.text_input("Enter repo URL", 'https://github.com/dbt-labs/jaffle-shop')
-        if repo_path is not None:
-            owner, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
-            repo_elements = generate_knowledge.list_online_repo_structure(owner, repo_name)
-            print(repo_elements)
-            print(repo_path)
-            print("\n")
-            repo_dbt_elements = generate_knowledge.select_dbt_elements_by_extension(repo_elements)
-            repo_dbt_models = generate_knowledge.select_dbt_models(repo_dbt_elements)
-            dbt_project_df = generate_knowledge.select_dbt_project_files(repo_dbt_elements)
-            dbt_models_df = generate_knowledge.generate_dbt_models_df(repo_dbt_models)
-            dbt_project_df, dbt_models_df = generate_knowledge.move_snapshots_to_models(dbt_project_df, dbt_models_df)
-            dbt_models_df = generate_knowledge.add_model_code_column(dbt_models_df, True, repo_path)
-            dbt_models_df = generate_knowledge.add_config_column(dbt_models_df)
-            
-            dbt_models_df['materialized'] = dbt_models_df['config'].apply(generate_knowledge.extract_materialized_value)
-            dbt_models_df['is_snapshot'] = dbt_models_df['config'].apply(generate_knowledge.check_is_snapshot)
-            dbt_models_df['materialized'] = dbt_models_df.apply(lambda row: 'snapshot' if row['is_snapshot'] else row['materialized'] ,1)
-            dbt_models_df['has_jinja_code'] = dbt_models_df['sql_code'].apply(generate_knowledge.contains_jinja_code)
-            dbt_models_df['model_category'] = dbt_models_df['name'].apply(generate_knowledge.categorize_model)
-            dbt_models_df['vertical'] = dbt_models_df.apply(lambda row: generate_knowledge.get_vertical(row['name'], row['model_category']), axis=1)
-            dbt_models_df = generate_knowledge.assign_yml_rows_to_each_model(dbt_models_df)
-            dbt_models_df['tests'] = dbt_models_df['yml_code'].apply(generate_knowledge.extract_tests)
-            dbt_models_df['has_tests'] = dbt_models_df['tests'].apply(lambda x: x is not None)
-            dbt_models_df['sql_ids'] = dbt_models_df['sql_code'].apply(generate_knowledge.extract_ids_from_query)
-            dbt_models_df['has_select_all_in_last_select'] = dbt_models_df['sql_code'].apply(generate_knowledge.has_select_all_in_last_select)
-            dbt_models_df['has_group_by'] = dbt_models_df['sql_code'].apply(generate_knowledge.has_group_by)
-            dbt_models_df['primary_key'] = dbt_models_df['tests'].apply(generate_knowledge.find_primary_key)
-            dbt_models_df['filters'] = dbt_models_df['sql_code'].apply(generate_knowledge.extract_sql_filters)
-            dbt_models_df['is_filtered'] = dbt_models_df['filters'].apply(lambda x: x is not None)
-            dbt_models_df['macros'] = dbt_models_df['sql_code'].apply(generate_knowledge.extract_dbt_macros)
-            dbt_models_df['has_macros'] = dbt_models_df['macros'].apply(lambda x: x is not None)
-            dbt_models_enriched_df = generate_knowledge.enrich_dbt_models(dbt_models_df)
+        owner, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
+        repo_elements = generate_knowledge.list_online_repo_structure(owner, repo_name)
+        print(repo_elements)
+        print("\n")
+        dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, True, repo_path)
+        print("save models and project knowledge from " + repo_path)
+        dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)
+        files = {
+            'agents': '../config/agents.yml',
+            'tasks': '../config/tasks.yml'
+        }
+        enable_chat = True
 
-            #dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, True, repo_path)
-            dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)
-            files = {
-                'agents': '../config/agents.yml',
-                'tasks': '../config/tasks.yml'
-            }
-            enable_chat = True
+
+    return enable_chat, dbt_repo_knowledge_df
+
+
+def render_sidebar():
+    enable_chat = False
+    st.sidebar.title("⚙️ Config your dbt project repo and LLM")
+    
+    st.sidebar.markdown("---")
+    
+    repo_option = st.sidebar.selectbox(
+        "Select dbt project repository",
+        ["Local", "Online", "Already used"]
+    )
+
+    if repo_option == "Already used":
+        uploaded_file = st.sidebar.file_uploader("Select processed models file")
+        repo_path = None
+    elif repo_option == "Local":
+        uploaded_file = None
+        repo_path = st.sidebar.text_input("Enter repo folder path")
+    elif repo_option == "Online":
+        uploaded_file = None
+        repo_path = st.sidebar.text_input("Enter repo URL", 'https://github.com/dbt-labs/jaffle-shop')
+
+    if st.sidebar.button("Load Repo") and (repo_path is not None or uploaded_file is not None):
+        with st.spinner("Loading repository..."):
+            enable_chat = load_repo(repo_option, uploaded_file, repo_path)
 
     st.sidebar.markdown("---")
     
