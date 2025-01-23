@@ -96,6 +96,7 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
         print("\n")
         dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, True, repo_path)
         print("save models and project knowledge from " + repo_path)
+
         dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)
         files = {
             'agents': '../config/agents.yml',
@@ -312,7 +313,7 @@ def init_session():
 
 def run_app():
     init_session()
-    enable_chat = render_sidebar()
+    enable_chat, dbt_repo_knowledge_df, loaded_vectorstore, files = render_sidebar()
     if enable_chat:
         render_chat()
     else:
