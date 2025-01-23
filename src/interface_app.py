@@ -62,12 +62,7 @@ def load_chroma_db(repo_name):
         embedding_function=langchain_openai_embeddings
     )
 
-    files = {
-        'agents': '../config/agents.yml',
-        'tasks': '../config/tasks.yml'
-    }
-
-    return loaded_vectorstore, files
+    return loaded_vectorstore
 
 def load_repo(repo_option, uploaded_file = None, repo_path = None):
 
@@ -80,8 +75,8 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
                 repo_name = match.group(1)
                 dbt_project_df = pd.read_csv('../data/dbt_project_' + str(repo_name) + '.csv')
                 dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_df, dbt_project_df)
-                loaded_vectorstore, files = load_chroma_db(repo_name)
-                enable_chat = True
+                loaded_vectorstore = load_chroma_db(repo_name)
+                enable_model_selection = True
 
     elif repo_option == "Local":
         repo_path = st.sidebar.text_input("Enter repo folder path")
@@ -98,17 +93,53 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
         print("save models and project knowledge from " + repo_path)
 
         dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)
-        files = {
-            'agents': '../config/agents.yml',
-            'tasks': '../config/tasks.yml'
-        }
+
         is_db_created = create_chromadb(dbt_repo_knowledge_df, repo_path)
         if is_db_created:
-            loaded_vectorstore, files = load_chroma_db(repo_name)
-            enable_chat = True
+            loaded_vectorstore = load_chroma_db(repo_name)
+            enable_model_selection = True
 
-    return enable_chat, dbt_repo_knowledge_df, loaded_vectorstore, files
+    return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore
 
+def create_agents_flow(llm_option, model_option):
+    files = {
+        'agents': '../config/agents.yml',
+        'tasks': '../config/tasks.yml'
+    }
+    
+    if llm_option == "OpenAI":
+        flow = None
+    else:
+        flow = None
+
+    return True, flow 
+
+def render_llm_options():
+    st.sidebar.markdown("---")
+
+    llm_option = st.sidebar.selectbox(
+        "LLM run: ",
+        ["Local LLM with LM Studio", "OpenAI"]
+    )
+    
+    if llm_option == "OpenAI":
+        print('hello!')
+        model_option = st.sidebar.selectbox(
+            "Available models",
+            ["gpt-4o-mini", "gpt-4o"]
+        )
+        DEFAULT_LLM_MODEL = model_option
+        os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
+    else:
+
+
+
+        model_option = st.sidebar.selectbox(
+            "Available models",
+            ["model-1", "model-2"]
+        )
+
+    return llm_option, model_option
 
 def render_sidebar():
     enable_chat = False
@@ -121,6 +152,7 @@ def render_sidebar():
         ["Local", "Online", "Already used"]
     )
 
+    
     if repo_option == "Already used":
         uploaded_file = st.sidebar.file_uploader("Select processed models file")
         repo_path = None
@@ -133,29 +165,11 @@ def render_sidebar():
 
     if st.sidebar.button("Load Repo") and (repo_path is not None or uploaded_file is not None):
         with st.spinner("Loading repository..."):
-            enable_chat = load_repo(repo_option, uploaded_file, repo_path)
-
-    st.sidebar.markdown("---")
-    
-    llm_option = st.sidebar.selectbox(
-        "LLM run: ",
-        ["Local LLM with LM Studio", "OpenAI"]
-    )
-    
-    if llm_option == "OpenAI":
-
-
-
-        langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
-        langchain_openai_llm = ChatOpenAI(model=DEFAULT_LLM_MODEL, temperature=0.1, openai_api_key=OPENAI_API_KEY, openai_organization = OPENAI_ORGANIZATION)
-
+            enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore = load_repo(repo_option, uploaded_file, repo_path)
+            return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore
     else:
-        model_option = st.sidebar.selectbox(
-            "Available models",
-            ["model-1", "model-2"]
-        )
-    return enable_chat
-
+        return False, None, None
+    
 
 def render_chat():
     st.markdown(
@@ -313,9 +327,14 @@ def init_session():
 
 def run_app():
     init_session()
-    enable_chat, dbt_repo_knowledge_df, loaded_vectorstore, files = render_sidebar()
-    if enable_chat:
-        render_chat()
+    enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore = render_sidebar()
+    if enable_model_selection:
+        llm_option, model_option = render_llm_options()
+        enable_chat, flow = create_agents_flow()
+        if enable_chat:
+            render_chat()
+        else:
+            st.title("Please select the  LLM config to start")
     else:
         st.title("Please select the dbt project repo and LLM config to start")
 
