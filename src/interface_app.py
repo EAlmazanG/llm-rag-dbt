@@ -34,19 +34,44 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
 
 
+def create_chromadb(dbt_repo_knowledge_df, repo_path):
+    _, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
+    
+    CHROMADB_DIRECTORY = '../chromadb'
+    COLLECTION_NAME = repo_name
+
+    dbt_repo_knowledge_df['contextual_info'] = dbt_repo_knowledge_df.apply(create_rag_db.combine_contextual_fields, axis=1)
+    documents = create_rag_db.create_documents_from_df(dbt_repo_knowledge_df)
+    langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
+
+    documents_cleaned = create_rag_db.clean_metadata(documents)
+    documents_chunked = create_rag_db.chunk_documents(documents_cleaned, chunk_size=500, chunk_overlap=100)
+    create_rag_db.save_vectorstore_to_chroma(documents_chunked, langchain_openai_embeddings)
+    print("chromadb for " + repo_name + " successfully created!", CHROMADB_DIRECTORY, COLLECTION_NAME)
+
+    return True
+
+def load_chroma_db(repo_name):
+    CHROMADB_DIRECTORY = '../chromadb'
+    COLLECTION_NAME = repo_name
+
+    langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
+    loaded_vectorstore = Chroma(
+        collection_name=COLLECTION_NAME,
+        persist_directory=CHROMADB_DIRECTORY,
+        embedding_function=langchain_openai_embeddings
+    )
+
+    files = {
+        'agents': '../config/agents.yml',
+        'tasks': '../config/tasks.yml'
+    }
+
+    return loaded_vectorstore, files
+
 def load_repo(repo_option, uploaded_file = None, repo_path = None):
 
     if repo_option == "Already used":
-        CHROMADB_DIRECTORY = '../chromadb'
-        COLLECTION_NAME = "my_chromadb" 
-
-        langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
-        loaded_vectorstore = Chroma(
-            collection_name=COLLECTION_NAME,
-            persist_directory=CHROMADB_DIRECTORY,
-            embedding_function=langchain_openai_embeddings
-        )
-
         if uploaded_file is not None:
             dbt_models_df = pd.read_csv(uploaded_file)
             file_name = uploaded_file.name
@@ -55,10 +80,7 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
                 repo_name = match.group(1)
                 dbt_project_df = pd.read_csv('../data/dbt_project_' + str(repo_name) + '.csv')
                 dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_df, dbt_project_df)
-                files = {
-                    'agents': '../config/agents.yml',
-                    'tasks': '../config/tasks.yml'
-                }
+                loaded_vectorstore, files = load_chroma_db(repo_name)
                 enable_chat = True
 
     elif repo_option == "Local":
@@ -79,10 +101,12 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
             'agents': '../config/agents.yml',
             'tasks': '../config/tasks.yml'
         }
-        enable_chat = True
+        is_db_created = create_chromadb(dbt_repo_knowledge_df, repo_path)
+        if is_db_created:
+            loaded_vectorstore, files = load_chroma_db(repo_name)
+            enable_chat = True
 
-
-    return enable_chat, dbt_repo_knowledge_df
+    return enable_chat, dbt_repo_knowledge_df, loaded_vectorstore, files
 
 
 def render_sidebar():
