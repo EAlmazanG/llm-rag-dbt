@@ -62,15 +62,14 @@ def create_chromadb(dbt_repo_knowledge_df, repo_path):
 
     documents_cleaned = create_rag_db.clean_metadata(documents)
     documents_chunked = create_rag_db.chunk_documents(documents_cleaned, chunk_size=500, chunk_overlap=100)
-    create_rag_db.save_vectorstore_to_chroma(documents_chunked, langchain_openai_embeddings)
+    create_rag_db.save_vectorstore_to_chroma(documents_chunked, langchain_openai_embeddings, CHROMADB_DIRECTORY, COLLECTION_NAME)
     print("chromadb for " + repo_name + " successfully created!", CHROMADB_DIRECTORY, COLLECTION_NAME)
 
     return True
 
 def load_chroma_db(repo_name):
     CHROMADB_DIRECTORY = '../chromadb'
-    #COLLECTION_NAME = repo_name
-    COLLECTION_NAME = "my_chromadb"
+    COLLECTION_NAME = repo_name
 
     langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
     loaded_vectorstore = Chroma(
@@ -111,7 +110,7 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
 
         dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)
 
-        is_db_created = create_chromadb(dbt_repo_knowledge_df, repo_path)
+        is_db_created = create_chromadb(dbt_repo_knowledge_df, repo_path, )
         if is_db_created:
             loaded_vectorstore = load_chroma_db(repo_name)
             enable_model_selection = True
@@ -119,6 +118,9 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
     return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore, repo_name
 
 def create_agents_flow():
+    from crewai import LLM, Agent, Task, Crew
+    from src.llm_agents_flow import dbtChatFlow
+    
     files = {
         'agents': '../config/agents.yml',
         'tasks': '../config/tasks.yml'
@@ -127,10 +129,11 @@ def create_agents_flow():
         if st.session_state.llm_option == "OpenAI":
             DEFAULT_LLM_MODEL = st.session_state.model_option
             os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
-            flow = None
+            flow = dbtChatFlow(files)
         else:
-            
-            flow = None
+            local_llm_name = st.session_state.model_option
+            local_llm = LLM(model="lm_studio/"+local_llm_name, base_url="http://127.0.0.1:1234/v1")
+            flow = dbtChatFlow(files, local_llm)
         st.session_state.flow = flow
 
 def render_llm_options():
