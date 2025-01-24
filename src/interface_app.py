@@ -120,7 +120,7 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
 def create_agents_flow():
     from crewai import LLM, Agent, Task, Crew
     from src.llm_agents_flow import dbtChatFlow
-    
+
     files = {
         'agents': '../config/agents.yml',
         'tasks': '../config/tasks.yml'
@@ -176,6 +176,7 @@ def render_sidebar():
     if st.sidebar.button("🧹 Clean Config", type="primary", 
                         help="Delete all config and reboot the app"):
         st.session_state.conversation = []
+        st.session_state.user_input_key = ""
         st.session_state.enable_model_selection = False
         st.session_state.dbt_repo_knowledge_df = None
         st.session_state.loaded_vectorstore = None
@@ -366,6 +367,8 @@ def handle_submit():
 def init_session():
     if 'conversation' not in st.session_state:
         st.session_state.conversation = []
+    if 'user_input_key' not in st.session_state:
+        st.session_state.user_input_key = ""
     if 'enable_model_selection' not in st.session_state:
         st.session_state.enable_model_selection = False
     if 'repo_name' not in st.session_state:
