@@ -217,171 +217,172 @@ def render_sidebar():
                     st.rerun()
     
 def render_chat():
-    st.markdown(
-        """
-        <style>
-            body {
-                font-family: 'Arial', sans-serif;
-            }
-            .chat-container {
-                padding: 20px;
-                border-radius: 10px;
-                background-color: #f9f9f9;
-                border: 1px solid #ddd;
-                margin-top: 20px;
-            }
-            .user-msg, .assistant-msg {
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                padding: 12px;
-                border-radius: 10px;
-                margin-bottom: 15px;
-                max-width: 75%;
-                font-size: 16px;
-            }
-            .user-msg {
-                background-color: #e1f5fe;
-                color: #333;
-                text-align: right;
-                margin-left: auto;
-                flex-direction: row-reverse;
-            }
-            .assistant-msg {
-                background-color: #eceff1;
-                color: #333;
-                text-align: left;
-                margin-right: auto;
-            }
-            .user-msg strong, .assistant-msg strong {
-                font-size: 18px;
-                color: #004d40;
-            }
-            .avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-            }
-            .input-container {
-                margin-top: 30px;
-            }
-            .stButton>button {
-                width: 100%;
-                border-radius: 8px;
-                background-color: #00695c;
-                color: white;
-                border: none;
-                padding: 12px;
-                font-size: 16px;
-            }
-            .stButton>button:hover {
-                background-color: #004d40;
-            }
-            .header-title {
-                font-size: 32px;
-                font-weight: bold;
-                color: #004d40;
-                margin-bottom: 10px;
-            }
-            .subheader {
-                font-size: 20px;
-                color: #555;
-                margin-bottom: 20px;
-            }
-            .divider {
-                border-top: 1px solid #ddd;
-                margin: 20px 0;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    if st.session_state.flow is not None:
+        st.markdown(
+            """
+            <style>
+                body {
+                    font-family: 'Arial', sans-serif;
+                }
+                .chat-container {
+                    padding: 20px;
+                    border-radius: 10px;
+                    background-color: #f9f9f9;
+                    border: 1px solid #ddd;
+                    margin-top: 20px;
+                }
+                .user-msg, .assistant-msg {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    padding: 12px;
+                    border-radius: 10px;
+                    margin-bottom: 15px;
+                    max-width: 75%;
+                    font-size: 16px;
+                }
+                .user-msg {
+                    background-color: #e1f5fe;
+                    color: #333;
+                    text-align: right;
+                    margin-left: auto;
+                    flex-direction: row-reverse;
+                }
+                .assistant-msg {
+                    background-color: #eceff1;
+                    color: #333;
+                    text-align: left;
+                    margin-right: auto;
+                }
+                .user-msg strong, .assistant-msg strong {
+                    font-size: 18px;
+                    color: #004d40;
+                }
+                .avatar {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                }
+                .input-container {
+                    margin-top: 30px;
+                }
+                .stButton>button {
+                    width: 100%;
+                    border-radius: 8px;
+                    background-color: #00695c;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    font-size: 16px;
+                }
+                .stButton>button:hover {
+                    background-color: #004d40;
+                }
+                .header-title {
+                    font-size: 32px;
+                    font-weight: bold;
+                    color: #004d40;
+                    margin-bottom: 10px;
+                }
+                .subheader {
+                    font-size: 20px;
+                    color: #555;
+                    margin-bottom: 20px;
+                }
+                .divider {
+                    border-top: 1px solid #ddd;
+                    margin: 20px 0;
+                }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
-    st.markdown('<div class="header-title">💬 dbt Agent Chat</div>', unsafe_allow_html=True)
-    st.markdown('<div class="subheader">Ask about your dbt project or get help with model changes! </div>', unsafe_allow_html=True)
-    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    
-    for msg in st.session_state.conversation:
-        if msg["role"] == "user":
-            st.markdown(
-                f'''
-                <div class="user-msg">
-                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar">
-                    <div><strong>You:</strong><br>{msg["content"]}</div>
-                </div>
-                ''',
-                unsafe_allow_html=True
-            )
-        else:
+        st.markdown('<div class="header-title">💬 dbt Agent Chat</div>', unsafe_allow_html=True)
+        st.markdown('<div class="subheader">Ask about your dbt project or get help with model changes! </div>', unsafe_allow_html=True)
+        st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+        
+        for msg in st.session_state.conversation:
+            if msg["role"] == "user":
+                st.markdown(
+                    f'''
+                    <div class="user-msg">
+                        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar">
+                        <div><strong>You:</strong><br>{msg["content"]}</div>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    f'''
+                    <div class="assistant-msg">
+                        <img src="https://images.seeklogo.com/logo-png/43/1/dbt-logo-png_seeklogo-431112.png?v=1957906038962209040" class="avatar">
+                        <div><strong>dbt Agent:</strong><br>{msg["content"]}</div>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True
+                )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div style="font-size: 16px; color: #6c757d; margin-bottom: 5px;">
+                Enter your request:
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        user_input = st.text_input(
+            "",
+            key="user_input",
+            placeholder="Type your message here...",
+            label_visibility="collapsed"
+        )
+
+        if user_input:
+            with st.spinner("Processing..."):
+                langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
+                
+                result = st.session_state.flow.kickoff(
+                    inputs={
+                        "request": user_input,
+                        "dbt_repo_knowledge_df": st.session_state.dbt_repo_knowledge_df,
+                        "vectorstore": st.session_state.loaded_vectorstore,
+                        "embedding_function": langchain_openai_embeddings
+                    }
+                )
+
+            st.session_state.conversation.append({"role": "user", "content": user_input})
+            st.session_state.conversation.append({"role": "assistant", "content": result.raw})
+
             st.markdown(
                 f'''
                 <div class="assistant-msg">
                     <img src="https://images.seeklogo.com/logo-png/43/1/dbt-logo-png_seeklogo-431112.png?v=1957906038962209040" class="avatar">
-                    <div><strong>dbt Agent:</strong><br>{msg["content"]}</div>
+                    <div><strong>dbt Agent:</strong><br>{markdown(result.raw)}</div>
                 </div>
                 ''',
                 unsafe_allow_html=True
             )
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div style="font-size: 16px; color: #6c757d; margin-bottom: 5px;">
-            Enter your request:
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    user_input = st.text_input(
-        "",
-        key="user_input",
-        placeholder="Type your message here...",
-        label_visibility="collapsed"
-    )
-
-    if user_input:
-        with st.spinner("Processing..."):
-            langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
-            
-            result = st.session_state.flow.kickoff(
-                inputs={
-                    "request": user_input,
-                    "dbt_repo_knowledge_df": st.session_state.dbt_repo_knowledge_df,
-                    "vectorstore": st.session_state.loaded_vectorstore,
-                    "embedding_function": langchain_openai_embeddings
-                }
-            )
-
-        st.session_state.conversation.append({"role": "user", "content": user_input})
-        st.session_state.conversation.append({"role": "assistant", "content": result.raw})
-
-        st.markdown(
-            f'''
-            <div class="assistant-msg">
-                <img src="https://images.seeklogo.com/logo-png/43/1/dbt-logo-png_seeklogo-431112.png?v=1957906038962209040" class="avatar">
-                <div><strong>dbt Agent:</strong><br>{markdown(result.raw)}</div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-        st.session_state.user_input = ""
+            st.session_state.user_input = ""
 
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns([0.75, 0.25])
-    with col1:
-        if st.button("Send"):
-            handle_submit()
+        col1, col2 = st.columns([0.75, 0.25])
+        with col1:
+            if st.button("Send"):
+                handle_submit()
 
-    with col2:
-        if st.button("🗑 Clear Chat"):
-            st.session_state.conversation = []
-            st.session_state.user_input_key = ""
-            st.rerun()
+        with col2:
+            if st.button("🗑 Clear Chat"):
+                st.session_state.conversation = []
+                st.session_state.user_input_key = ""
+                st.rerun()
 
 def handle_submit():
     user_input = st.session_state.user_input
@@ -428,8 +429,9 @@ def run_app():
         st.title("ℹ️  Select LLM to continue")
     
     elif not st.session_state.flow:
-        st.session_state.flow = create_agents_flow()
-        render_chat()
+        create_agents_flow()
+    
+    render_chat()
 
 if __name__ == "__main__":
     run_app()
