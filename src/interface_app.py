@@ -34,6 +34,22 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
 
 
+def get_available_models():
+    url = "http://127.0.0.1:1234/v1/models"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            models = response.json()
+            model_names = [model['id'] for model in models.get('data', [])]
+
+            return model_names
+        else:
+            print(f"Error: {response.status_code}")
+            return []
+    except Exception as e:
+        print(f"Error fetching models: {e}")
+        return []
+
 def create_chromadb(dbt_repo_knowledge_df, repo_path):
     _, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
     
@@ -135,13 +151,11 @@ def render_llm_options():
                 ["gpt-4o-mini", "gpt-4o"]
             )
         else:
-
-
-
+            model_names = get_available_models()
             model_option = st.sidebar.selectbox(
                 "Available models",
-                ["model-1", "model-2"]
-        )
+                model_names
+            )
         if st.sidebar.button("Load LLM"):
             st.session_state.enable_flow = True
             st.session_state.llm_option = llm_option
