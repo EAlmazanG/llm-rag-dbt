@@ -102,17 +102,19 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
 
     return enable_model_selection, dbt_repo_knowledge_df, loaded_vectorstore, repo_name
 
-def create_agents_flow(llm_option, model_option):
+def create_agents_flow():
     files = {
         'agents': '../config/agents.yml',
         'tasks': '../config/tasks.yml'
     }
     if st.session_state.enable_flow:
-        if llm_option == "OpenAI":
+        if st.session_state.llm_option == "OpenAI":
+            DEFAULT_LLM_MODEL = st.session_state.model_option
+            os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
             flow = None
         else:
+            
             flow = None
-        st.session_state.flow = flow
         st.session_state.flow = flow
 
 def render_llm_options():
@@ -132,8 +134,6 @@ def render_llm_options():
                 "Available models",
                 ["gpt-4o-mini", "gpt-4o"]
             )
-            DEFAULT_LLM_MODEL = model_option
-            os.environ['OPENAI_MODEL_NAME'] = DEFAULT_LLM_MODEL
         else:
 
 
@@ -367,15 +367,15 @@ def run_app():
     init_session()
     render_sidebar()
     
-    if not st.session_state.repo_loaded:
+    if not st.session_state.enable_model_selection:
         st.title("ℹ️ Select a dbt repo to start")
     
-    elif not st.session_state.llm_loaded:
+    elif not st.session_state.enable_flow:
         render_llm_options()
         st.title("ℹ️  Select LLM to continue")
     else:
         if not st.session_state.flow:
-            st.session_state.flow = create_agents_flow(...)
+            st.session_state.flow = create_agents_flow()
         render_chat()
 
 if __name__ == "__main__":
