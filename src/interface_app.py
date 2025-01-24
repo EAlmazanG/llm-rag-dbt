@@ -170,9 +170,7 @@ def render_llm_options():
         st.sidebar.success(f"LLM loaded: {st.session_state.llm_option} - {st.session_state.model_option} ")
 
 def render_sidebar():
-    st.sidebar.title("⚙️ Config your dbt project repo and LLM")
-    
-    st.sidebar.markdown("---")
+
     if st.sidebar.button("🧹 Clean Config", type="primary", 
                         help="Delete all config and reboot the app"):
         st.session_state.conversation = []
@@ -186,6 +184,8 @@ def render_sidebar():
         st.session_state.enable_flow = False
         st.session_state.flow = None
         st.rerun()
+
+    st.sidebar.title("⚙️ Config your dbt project repo and LLM")
 
     if st.session_state.enable_model_selection:
         st.sidebar.success(f"Repo loaded: {st.session_state.repo_name}")
@@ -395,7 +395,7 @@ def render_chat():
                 st.session_state.conversation = []
                 st.session_state.user_input_key = ""
                 st.rerun()
-                
+
 def init_session():
     if 'conversation' not in st.session_state:
         st.session_state.conversation = []
