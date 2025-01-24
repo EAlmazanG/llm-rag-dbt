@@ -215,7 +215,29 @@ def render_sidebar():
                     st.session_state.dbt_repo_knowledge_df = dbt_repo_knowledge_df
                     st.session_state.loaded_vectorstore = loaded_vectorstore
                     st.rerun()
-    
+
+def handle_submit():
+    user_input = st.session_state.user_input
+    if user_input.strip():
+        with st.spinner("Thinking..."):
+            langchain_openai_embeddings = OpenAIEmbeddings(
+                openai_api_key=OPENAI_API_KEY, 
+                model="text-embedding-ada-002"
+            )
+            result = st.session_state.flow.kickoff(
+                inputs={
+                    "request": user_input,
+                    "dbt_repo_knowledge_df": st.session_state.dbt_repo_knowledge_df,
+                    "vectorstore": st.session_state.loaded_vectorstore,
+                    "embedding_function": langchain_openai_embeddings
+                }
+            )
+
+        st.session_state.conversation.append({"role": "user", "content": user_input})
+        st.session_state.conversation.append({"role": "assistant", "content": result.raw})
+        st.session_state.user_input = ""
+        st.rerun()
+
 def render_chat():
     if st.session_state.flow is not None:
         st.markdown(
@@ -320,7 +342,7 @@ def render_chat():
         st.markdown('<div class="subheader">Ask about your dbt project or get help with model changes! </div>', unsafe_allow_html=True)
         st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        
+
         for msg in st.session_state.conversation:
             if msg["role"] == "user":
                 st.markdown(
@@ -353,41 +375,13 @@ def render_chat():
             """,
             unsafe_allow_html=True
         )
-        user_input = st.text_input(
+        
+        st.text_input(
             "",
             key="user_input",
             placeholder="Type your message here...",
             label_visibility="collapsed"
         )
-
-        if user_input:
-            with st.spinner("Processing..."):
-                langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
-                
-                result = st.session_state.flow.kickoff(
-                    inputs={
-                        "request": user_input,
-                        "dbt_repo_knowledge_df": st.session_state.dbt_repo_knowledge_df,
-                        "vectorstore": st.session_state.loaded_vectorstore,
-                        "embedding_function": langchain_openai_embeddings
-                    }
-                )
-
-            st.session_state.conversation.append({"role": "user", "content": user_input})
-            st.session_state.conversation.append({"role": "assistant", "content": result.raw})
-
-            st.markdown(
-                f'''
-                <div class="assistant-msg">
-                    <img src="https://images.seeklogo.com/logo-png/43/1/dbt-logo-png_seeklogo-431112.png?v=1957906038962209040" class="avatar">
-                    <div><strong>dbt Agent:</strong><br>{st.markdown(result.raw)}</div>
-                </div>
-                ''',
-                unsafe_allow_html=True
-            )
-
-            st.session_state.user_input = ""
-
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -401,18 +395,7 @@ def render_chat():
                 st.session_state.conversation = []
                 st.session_state.user_input_key = ""
                 st.rerun()
-
-def handle_submit():
-    user_input = st.session_state.user_input
-    if user_input.strip():
-        st.session_state.conversation.append({"role": "user", "content": user_input})
-        with st.spinner("Thinking..."):
-            response_text = "Response (placeholder)"
-            st.session_state.conversation.append({"role": "assistant", "content": response_text})
-
-        st.session_state.user_input_key = ""
-        st.rerun()
-
+                
 def init_session():
     if 'conversation' not in st.session_state:
         st.session_state.conversation = []
