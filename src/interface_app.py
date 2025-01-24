@@ -300,8 +300,8 @@ def render_chat():
     st.markdown('<div class="header-title">💬 dbt Agent Chat</div>', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Ask about your dbt project or get help with model changes! </div>', unsafe_allow_html=True)
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    
     for msg in st.session_state.conversation:
         if msg["role"] == "user":
             st.markdown(
@@ -340,6 +340,36 @@ def render_chat():
         placeholder="Type your message here...",
         label_visibility="collapsed"
     )
+
+    if user_input:
+        with st.spinner("Processing..."):
+            langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
+            
+            result = st.session_state.flow.kickoff(
+                inputs={
+                    "request": user_input,
+                    "dbt_repo_knowledge_df": st.session_state.dbt_repo_knowledge_df,
+                    "vectorstore": st.session_state.loaded_vectorstore,
+                    "embedding_function": langchain_openai_embeddings
+                }
+            )
+
+        st.session_state.conversation.append({"role": "user", "content": user_input})
+        st.session_state.conversation.append({"role": "assistant", "content": result.raw})
+
+        st.markdown(
+            f'''
+            <div class="assistant-msg">
+                <img src="https://images.seeklogo.com/logo-png/43/1/dbt-logo-png_seeklogo-431112.png?v=1957906038962209040" class="avatar">
+                <div><strong>dbt Agent:</strong><br>{markdown(result.raw)}</div>
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
+
+        st.session_state.user_input = ""
+
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     col1, col2 = st.columns([0.75, 0.25])
