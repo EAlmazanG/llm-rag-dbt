@@ -174,7 +174,7 @@ def render_sidebar():
     if st.sidebar.button("🧹 Clean Config", type="primary", 
                         help="Delete all config and reboot the app"):
         st.session_state.conversation = []
-        st.session_state.user_input_key = ""
+        st.session_state.input_counter = 0
         st.session_state.enable_model_selection = False
         st.session_state.dbt_repo_knowledge_df = None
         st.session_state.loaded_vectorstore = None
@@ -217,7 +217,8 @@ def render_sidebar():
                     st.rerun()
 
 def handle_submit():
-    user_input = st.session_state.user_input
+    current_key = f"user_input_widget_{st.session_state.input_counter}"
+    user_input = st.session_state.get(current_key, "")
     if user_input.strip():
         with st.spinner("Thinking..."):
             langchain_openai_embeddings = OpenAIEmbeddings(
@@ -232,10 +233,9 @@ def handle_submit():
                     "embedding_function": langchain_openai_embeddings
                 }
             )
-
         st.session_state.conversation.append({"role": "user", "content": user_input})
         st.session_state.conversation.append({"role": "assistant", "content": result.raw})
-        st.session_state.user_input = ""
+        st.session_state.input_counter += 1
         st.rerun()
 
 def render_chat():
@@ -282,7 +282,7 @@ def render_chat():
                     color: #333;
                     text-align: left;
                     margin-right: auto;
-                    border: 1px solid #ddd;
+                    border: none;
                     width: 100%;
                 }
                 .user-msg strong, .assistant-msg strong {
@@ -378,7 +378,7 @@ def render_chat():
         
         st.text_input(
             "",
-            key="user_input",
+            key=f"user_input_widget_{st.session_state.input_counter}",
             placeholder="Type your message here...",
             label_visibility="collapsed"
         )
@@ -393,14 +393,14 @@ def render_chat():
         with col2:
             if st.button("🗑 Clear Chat"):
                 st.session_state.conversation = []
-                st.session_state.user_input_key = ""
+                st.session_state.input_counter += 1
                 st.rerun()
 
 def init_session():
     if 'conversation' not in st.session_state:
         st.session_state.conversation = []
-    if 'user_input_key' not in st.session_state:
-        st.session_state.user_input_key = ""
+    if 'input_counter' not in st.session_state:
+        st.session_state.input_counter = 0
     if 'enable_model_selection' not in st.session_state:
         st.session_state.enable_model_selection = False
     if 'repo_name' not in st.session_state:
