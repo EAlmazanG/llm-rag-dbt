@@ -158,6 +158,7 @@ def render_sidebar():
     st.sidebar.markdown("---")
     if st.sidebar.button("🧹 Clean Config", type="primary", 
                         help="Delete all config and reboot the app"):
+        st.session_state.conversation = []
         st.session_state.enable_model_selection = False
         st.session_state.dbt_repo_knowledge_df = None
         st.session_state.loaded_vectorstore = None
@@ -346,6 +347,8 @@ def handle_submit():
         st.rerun()
 
 def init_session():
+    if 'conversation' not in st.session_state:
+        st.session_state.conversation = []
     if 'enable_model_selection' not in st.session_state:
         st.session_state.enable_model_selection = False
     if 'repo_name' not in st.session_state:
@@ -366,16 +369,16 @@ def init_session():
 def run_app():
     init_session()
     render_sidebar()
-    
+    render_llm_options()
+
     if not st.session_state.enable_model_selection:
         st.title("ℹ️ Select a dbt repo to start")
     
     elif not st.session_state.enable_flow:
-        render_llm_options()
         st.title("ℹ️  Select LLM to continue")
-    else:
-        if not st.session_state.flow:
-            st.session_state.flow = create_agents_flow()
+    
+    elif not st.session_state.flow:
+        st.session_state.flow = create_agents_flow()
         render_chat()
 
 if __name__ == "__main__":
