@@ -80,9 +80,8 @@ models:
 - Snapshot Paths: snapshots
 - Vars: dbt_date:time_zone: America/Los_Angeles
 - Seeds Schema: raw
-- Models:
-  - Staging Materialized: view
-  - Marts Materialized: table"
+- Models Staging Materialized: view
+- Models Marts Materialized: table"
 package-lock.yml,package-lock.yml,.yml,"packages:
 - package: dbt-labs/dbt_utils
   version: 1.1.1
@@ -99,11 +98,11 @@ packages.yml,packages.yml,.yml,"packages:
   version: 0.10.0
 - git: https://github.com/dbt-labs/dbt-audit-helper.git
   revision: main
-",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']","- **dbt_utils**: This package offers a collection of utility macros that streamline common dbt tasks, enhancing efficiency in data transformations, testing, and column selection. It empowers users to write cleaner and more maintainable SQL code, ultimately improving project productivity.
+",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']","- **dbt_utils**: This package offers a collection of reusable macros that streamline common dbt tasks, enhancing efficiency in data transformations, testing, and documentation. It simplifies complex SQL operations, allowing users to focus on building robust data models.
 
-- **dbt_date**: Designed for date-related operations, this package simplifies transformations and calculations involving dates. It provides essential functions that facilitate time series analysis, making it easier to handle and manipulate date data within dbt projects.
+- **dbt_date**: Designed for date manipulation, this package provides macros that facilitate date-related transformations and calculations. It enhances time series analysis by offering functions for date truncation, formatting, and interval calculations, making it easier to work with temporal data.
 
-- **dbt_audit_helper**: This package aids in maintaining data integrity by automating the generation of SQL for data validation and testing. It supports users in conducting thorough data quality audits, ensuring that the data meets specified standards and requirements."
+- **dbt_audit_helper**: This package aids in maintaining data quality by generating SQL scripts for comprehensive data validation and testing. It helps users identify discrepancies and ensure data integrity, ultimately supporting better decision-making based on reliable data."
 macros/cents_to_dollars.sql,cents_to_dollars.sql,.sql,"{# A basic example for a project-wide macro to cast a column uniformly #}
  {% macro cents_to_dollars(column_name) -%} {{ return(adapter.dispatch('cents_to_dollars')(column_name)) }} {%- endmacro %} {% macro default__cents_to_dollars(column_name) -%} ({{ column_name }} / 100)::numeric(16, 2) {%- endmacro %} {% macro postgres__cents_to_dollars(column_name) -%} ({{ column_name }}::numeric(16, 2) / 100) {%- endmacro %} {% macro bigquery__cents_to_dollars(column_name) %} round(cast(({{ column_name }} / 100) as numeric), 2) {% endmacro %} {% macro fabric__cents_to_dollars(column_name) %} cast({{ column_name }} / 100 as numeric(16, 2)) {% endmacro %}",False,True,False,,"Converts a specified column from cents to dollars uniformly across different database platforms. 
 

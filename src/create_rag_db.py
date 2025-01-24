@@ -35,43 +35,42 @@ def combine_contextual_fields(row):
     combined = f"""
         <MODEL CODE>:
         .sql Code:
-        {row['code'] if pd.notna(row['code']) else 'N/A'}
+        {str(row['code']) if pd.notna(row['code']) else 'N/A'}
 
         .yml Code:
-        {row['yml_code'] if pd.notna(row['yml_code']) else 'N/A'}
+        {str(row['yml_code']) if pd.notna(row['yml_code']) else 'N/A'}
 
         <MODEL INFO>
         Primary Key:
-        {row['primary_key'] if pd.notna(row['primary_key']) else 'N/A'}
+        {str(row['primary_key']) if pd.notna(row['primary_key']) else 'N/A'}
 
         IDS:
-        {row['sql_ids'] if pd.notna(row['sql_ids']) else 'N/A'}
+        {str(row['sql_ids']) if pd.notna(row['sql_ids']) else 'N/A'}
 
         Columns used to Filter the model throuhg JOINS, HAVING, WHERE...:
-        {row['filters'] if pd.notna(row['filters']) else 'N/A'}
+        {str(row['filters']) if pd.notna(row['filters']) else 'N/A'}
 
         Tests:
-        {row['tests'] if pd.notna(row['tests']) else 'N/A'}
+        {str(row['tests']) if pd.notna(row['tests']) else 'N/A'}
 
         Description for project files:
-        {row['description'] if pd.notna(row['description']) else 'N/A'}
+        {str(row['description']) if pd.notna(row['description']) else 'N/A'}
 
         dbt Model description:
-        {row['model_description'] if pd.notna(row['model_description']) else 'N/A'}
+        {str(row['model_description']) if pd.notna(row['model_description']) else 'N/A'}
 
         Jinja inside the dbt model description:
-        {row['jinja_description'] if pd.notna(row['jinja_description']) else 'N/A'}
+        {str(row['jinja_description']) if pd.notna(row['jinja_description']) else 'N/A'}
 
         <MODEL DEPENDENCIES>:
         Downstream models:
-        {row['children_models'] if pd.notna(row['children_models']) else 'N/A'}
+        {str(row['children_models']) if pd.notna(row['children_models']) else 'N/A'}
 
         Upstream models:
-        {row['parent_models'] if pd.notna(row['parent_models']) else 'N/A'}
+        {str(row['parent_models']) if pd.notna(row['parent_models']) else 'N/A'}
 
-        {'The model is in the first layer of the dbt model, connected directly to the sources: ' + row['source'] if row.get('is_source_model') else ''}
-        {'Also, The model is in the last layer, so is consider as a business output' if row['is_end_model'] else ''}
-            
+        {'The model is in the first layer of the dbt model, connected directly to the sources: ' + str(row['source']) if row.get('is_source_model') else ''}
+        {'Also, The model is in the last layer, so is considered as a business output' if row.get('is_end_model') else ''}
     """
     return combined.strip()
 
