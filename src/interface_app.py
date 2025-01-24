@@ -223,13 +223,18 @@ def render_chat():
             <style>
                 body {
                     font-family: 'Arial', sans-serif;
+                    margin: 0;
+                    padding: 0;
                 }
                 .chat-container {
+                    width: 100%; /* Ajuste al ancho de la pantalla */
+                    max-width: 100%;
                     padding: 20px;
                     border-radius: 10px;
                     background-color: #f9f9f9;
                     border: 1px solid #ddd;
                     margin-top: 20px;
+                    box-sizing: border-box;
                 }
                 .user-msg, .assistant-msg {
                     display: flex;
@@ -238,8 +243,10 @@ def render_chat():
                     padding: 12px;
                     border-radius: 10px;
                     margin-bottom: 15px;
-                    max-width: 75%;
                     font-size: 16px;
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
                 }
                 .user-msg {
                     background-color: #e1f5fe;
@@ -249,10 +256,12 @@ def render_chat():
                     flex-direction: row-reverse;
                 }
                 .assistant-msg {
-                    background-color: #eceff1;
+                    background-color: #ffffff;
                     color: #333;
                     text-align: left;
                     margin-right: auto;
+                    border: 1px solid #ddd;
+                    width: 100%;
                 }
                 .user-msg strong, .assistant-msg strong {
                     font-size: 18px;
@@ -265,6 +274,7 @@ def render_chat():
                 }
                 .input-container {
                     margin-top: 30px;
+                    width: 100%;
                 }
                 .stButton>button {
                     width: 100%;
@@ -283,15 +293,23 @@ def render_chat():
                     font-weight: bold;
                     color: #004d40;
                     margin-bottom: 10px;
+                    text-align: center;
                 }
                 .subheader {
                     font-size: 20px;
                     color: #555;
                     margin-bottom: 20px;
+                    text-align: center;
                 }
                 .divider {
                     border-top: 1px solid #ddd;
                     margin: 20px 0;
+                }
+                .markdown-content {
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    word-wrap: break-word;
                 }
             </style>
             """,
@@ -362,7 +380,7 @@ def render_chat():
                 f'''
                 <div class="assistant-msg">
                     <img src="https://images.seeklogo.com/logo-png/43/1/dbt-logo-png_seeklogo-431112.png?v=1957906038962209040" class="avatar">
-                    <div><strong>dbt Agent:</strong><br>{markdown(result.raw)}</div>
+                    <div><strong>dbt Agent:</strong><br>{st.markdown(result.raw)}</div>
                 </div>
                 ''',
                 unsafe_allow_html=True
