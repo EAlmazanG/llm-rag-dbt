@@ -55,8 +55,9 @@ def create_chromadb(dbt_repo_knowledge_df, repo_path):
     
     CHROMADB_DIRECTORY = '../chromadb'
     COLLECTION_NAME = repo_name
-
+    print(dbt_repo_knowledge_df)
     dbt_repo_knowledge_df['contextual_info'] = dbt_repo_knowledge_df.apply(create_rag_db.combine_contextual_fields, axis=1)
+    
     documents = create_rag_db.create_documents_from_df(dbt_repo_knowledge_df)
     langchain_openai_embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-ada-002")
 

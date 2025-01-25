@@ -70,20 +70,22 @@ models:
 ",False,False,False,,"- Name: jaffle_shop
 - Version: 3.0.0
 - Require dbt version: >=1.5.0
-- Project ID (dbt Cloud): 275557
-- Profile: default
-- Model Paths: models/
-- Analysis Paths: analyses/
-- Test Paths: data-tests/
-- Seed Paths: seeds/
-- Macro Paths: macros/
-- Snapshot Paths: snapshots/
-- Target Path: target/
-- Clean Targets: target/, dbt_packages/
-- Vars: dbt_date:time_zone: America/Los_Angeles
+- Target Path: target
+- Clean Targets: 
+  - target
+  - dbt_packages
+- Model Paths: models
+- Analysis Paths: analyses
+- Test Paths: data-tests
+- Seed Paths: seeds
+- Macro Paths: macros
+- Snapshot Paths: snapshots
+- Vars: 
+  - dbt_date:time_zone: America/Los_Angeles
 - Seeds Schema: raw
-- Models Staging Materialized: view
-- Models Marts Materialized: table"
+- Models Materialization:
+  - Staging: view
+  - Marts: table"
 package-lock.yml,package-lock.yml,.yml,"packages:
 - package: dbt-labs/dbt_utils
   version: 1.1.1
@@ -100,27 +102,28 @@ packages.yml,packages.yml,.yml,"packages:
   version: 0.10.0
 - git: https://github.com/dbt-labs/dbt-audit-helper.git
   revision: main
-",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']","- **dbt_utils**: This package offers a collection of reusable macros that streamline common dbt tasks, enhancing efficiency in data modeling. It simplifies operations like column selection, testing, and transformations, allowing users to focus on building robust analytics without repetitive coding.
+",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']","- **dbt_utils**: This package offers a collection of reusable macros that streamline common dbt tasks, enhancing productivity. It simplifies operations such as column selection, testing, and data transformations, allowing users to focus on building robust data models without reinventing the wheel.
 
-- **dbt_date**: Designed for date-related operations, this package provides macros that facilitate date transformations and calculations. It enhances time series analysis by simplifying the handling of date formats, intervals, and aggregations, making it easier to derive insights from temporal data.
+- **dbt_date**: Designed to assist with date-related transformations, this package provides macros that simplify calculations and formatting. It enhances time series analysis by making it easier to manipulate and analyze date fields, ensuring accurate reporting and insights.
 
-- **dbt_audit_helper**: This package aids in maintaining data integrity by generating SQL scripts for data validation and testing. It supports data quality audits, ensuring that the data meets specified standards and helping teams identify discrepancies early in the data pipeline."
+- **dbt_audit_helper**: This package aids in maintaining data quality by generating SQL scripts for comprehensive data validation and testing. It empowers users to conduct audits efficiently, ensuring that data integrity is upheld throughout the dbt project lifecycle."
 macros/cents_to_dollars.sql,cents_to_dollars.sql,.sql,"{# A basic example for a project-wide macro to cast a column uniformly #}
- {% macro cents_to_dollars(column_name) -%} {{ return(adapter.dispatch('cents_to_dollars')(column_name)) }} {%- endmacro %} {% macro default__cents_to_dollars(column_name) -%} ({{ column_name }} / 100)::numeric(16, 2) {%- endmacro %} {% macro postgres__cents_to_dollars(column_name) -%} ({{ column_name }}::numeric(16, 2) / 100) {%- endmacro %} {% macro bigquery__cents_to_dollars(column_name) %} round(cast(({{ column_name }} / 100) as numeric), 2) {% endmacro %} {% macro fabric__cents_to_dollars(column_name) %} cast({{ column_name }} / 100 as numeric(16, 2)) {% endmacro %}",False,True,False,,"Converts a specified column from cents to dollars uniformly across different database platforms. 
+ {% macro cents_to_dollars(column_name) -%} {{ return(adapter.dispatch('cents_to_dollars')(column_name)) }} {%- endmacro %} {% macro default__cents_to_dollars(column_name) -%} ({{ column_name }} / 100)::numeric(16, 2) {%- endmacro %} {% macro postgres__cents_to_dollars(column_name) -%} ({{ column_name }}::numeric(16, 2) / 100) {%- endmacro %} {% macro bigquery__cents_to_dollars(column_name) %} round(cast(({{ column_name }} / 100) as numeric), 2) {% endmacro %} {% macro fabric__cents_to_dollars(column_name) %} cast({{ column_name }} / 100 as numeric(16, 2)) {% endmacro %}",False,True,False,,"Converts a specified column from cents to dollars uniformly across different database adapters. 
 
-- **Default Implementation**: Divides the column by 100 and casts to numeric(16, 2).
-- **Postgres**: Similar to default but includes explicit casting.
-- **BigQuery**: Rounds the result after casting.
-- **Fabric**: Casts the division result to numeric(16, 2)."
+- Default implementation: Divides the column by 100 and casts to numeric(16, 2).
+- Postgres: Similar to default but includes explicit casting.
+- BigQuery: Rounds the result after casting.
+- Fabric: Casts the division result to numeric(16, 2)."
 macros/generate_schema_name.sql,generate_schema_name.sql,.sql,"{% macro generate_schema_name(custom_schema_name, node) %} {%
 set default_schema = target.schema %} {# seeds go in a global `raw` schema #}
  {% if node.resource_type == 'seed' %} {{ custom_schema_name | trim }} {# non-specified schemas go to the default target schema #}
  {% elif custom_schema_name is none %} {{ default_schema }} {# specified custom schema names go to the schema name prepended with the the default schema name in prod (as this is an example project we want the schemas clearly labeled) #}
  {% elif target.name == 'prod' %} {{ default_schema }}_{{ custom_schema_name | trim }} {# specified custom schemas go to the default target schema for non-prod targets #}
- {% else %} {{ default_schema }} {% endif %} {% endmacro %}",False,True,False,,"Generates a schema name based on the resource type and target environment.  
-- For seeds, uses a custom schema name.  
+ {% else %} {{ default_schema }} {% endif %} {% endmacro %}",False,True,False,,"Generates schema names based on input conditions:  
+- For seeds, returns a trimmed custom schema name.  
 - If no custom name is provided, defaults to the target schema.  
-- In production, appends the custom name to the default schema."
+- In production, appends the custom name to the default schema.  
+- For non-production, defaults to the target schema."
 jaffle-data/raw_customers.csv,raw_customers.csv,.csv,"                                  id           name
 50a2d1c4-d788-4498-a6f7-dd75d4db588f Stephanie Love
 438005c2-dd1d-48aa-8bfd-7fb06851b5f8  Kristi Keller
