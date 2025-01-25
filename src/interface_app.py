@@ -206,7 +206,7 @@ def render_sidebar():
             repo_path = None
         elif repo_option == "Local":
             uploaded_file = None
-            repo_path = st.sidebar.text_input("Enter repo folder path")
+            repo_path = st.sidebar.text_input("Enter repo folder path", '/Users/jobandtalent/Documents/GitHub/llm-rag-dbt/test_repo/jaffle-shop-main')
         elif repo_option == "Online":
             uploaded_file = None
             repo_path = st.sidebar.text_input("Enter repo URL", 'https://github.com/dbt-labs/jaffle-shop')
