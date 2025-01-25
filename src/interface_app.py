@@ -95,18 +95,22 @@ def load_repo(repo_option, uploaded_file = None, repo_path = None):
                 loaded_vectorstore = load_chroma_db(repo_name)
                 enable_model_selection = True
 
-    elif repo_option == "Local":
-        repo_path = st.sidebar.text_input("Enter repo folder path")
-        repo_elements = generate_knowledge.list_local_repo_structure(repo_path)
+    else:
+        if repo_option == "Local":
+            repo_name = os.path.basename(repo_path.rstrip('/'))
+            repo_elements = generate_knowledge.list_local_repo_structure(repo_path)
+            print(repo_elements)
+            print("\n")
+            dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, False, repo_path)
 
 
-
-    elif repo_option == "Online":
-        owner, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
-        repo_elements = generate_knowledge.list_online_repo_structure(owner, repo_name)
-        print(repo_elements)
-        print("\n")
-        dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, True, repo_path)
+        elif repo_option == "Online":
+            owner, repo_name = generate_knowledge.extract_owner_and_repo(repo_path)
+            repo_elements = generate_knowledge.list_online_repo_structure(owner, repo_name)
+            print(repo_elements)
+            print("\n")
+            dbt_models_enriched_df, dbt_project_df = generate_knowledge.generate_knowledge_from_repo_elements(repo_elements, True, repo_path)
+       
         print("save models and project knowledge from " + repo_path)
 
         dbt_repo_knowledge_df = create_rag_db.merge_dbt_models_and_project_dfs(dbt_models_enriched_df, dbt_project_df)

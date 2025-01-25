@@ -1,0 +1,17 @@
+path,name,extension,code,is_seed,is_macro,is_test,packages,description
+package-lock.yml,package-lock.yml,.yml,Error: [Errno 2] No such file or directory: 'package-lock.yml',False,False,False,,
+packages.yml,packages.yml,.yml,Error: [Errno 2] No such file or directory: 'packages.yml',False,False,False,[],"Installed Packages: []
+
+Currently, there are no installed dbt packages in your project. Consider adding packages to enhance functionality, streamline processes, and improve data quality. Popular options include `dbt_utils` for simplifying common tasks, `dbt_audit_helper` for data validation, and `dbt_date` for efficient date handling. Each package can significantly improve your dbt workflow and project outcomes."
+Taskfile.yml,Taskfile.yml,.yml,Error: [Errno 2] No such file or directory: 'Taskfile.yml',False,False,False,,
+dbt_project.yml,dbt_project.yml,.yml,Error: [Errno 2] No such file or directory: 'dbt_project.yml',False,False,False,,- Error: No such file or directory: 'dbt_project.yml'
+macros/cents_to_dollars.sql,cents_to_dollars.sql,.sql,Error: [Errno 2] No such file or directory: 'macros/cents_to_dollars.sql',False,True,False,,"- Converts monetary values from cents to dollars for accurate financial reporting.  
+- Ensures consistent formatting and precision in currency calculations across models."
+macros/generate_schema_name.sql,generate_schema_name.sql,.sql,Error: [Errno 2] No such file or directory: 'macros/generate_schema_name.sql',False,True,False,,"- Generates a schema name based on specified parameters for consistent database organization.  
+- Handles errors related to missing files, ensuring robust execution."
+jaffle-data/raw_items.csv,raw_items.csv,.csv,Error: [Errno 2] No such file or directory: 'jaffle-data/raw_items.csv',False,False,False,,
+jaffle-data/raw_customers.csv,raw_customers.csv,.csv,Error: [Errno 2] No such file or directory: 'jaffle-data/raw_customers.csv',False,False,False,,
+jaffle-data/raw_stores.csv,raw_stores.csv,.csv,Error: [Errno 2] No such file or directory: 'jaffle-data/raw_stores.csv',False,False,False,,
+jaffle-data/raw_orders.csv,raw_orders.csv,.csv,Error: [Errno 2] No such file or directory: 'jaffle-data/raw_orders.csv',False,False,False,,
+jaffle-data/raw_supplies.csv,raw_supplies.csv,.csv,Error: [Errno 2] No such file or directory: 'jaffle-data/raw_supplies.csv',False,False,False,,
+jaffle-data/raw_products.csv,raw_products.csv,.csv,Error: [Errno 2] No such file or directory: 'jaffle-data/raw_products.csv',False,False,False,,
