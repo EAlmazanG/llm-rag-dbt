@@ -83,9 +83,9 @@ models:
 - Vars: 
   - dbt_date:time_zone: America/Los_Angeles
 - Seeds Schema: raw
-- Models Materialization:
-  - Staging: view
-  - Marts: table"
+- Models:
+  - Staging Materialized: view
+  - Marts Materialized: table"
 package-lock.yml,package-lock.yml,.yml,"packages:
 - package: dbt-labs/dbt_utils
   version: 1.1.1
@@ -102,18 +102,18 @@ packages.yml,packages.yml,.yml,"packages:
   version: 0.10.0
 - git: https://github.com/dbt-labs/dbt-audit-helper.git
   revision: main
-",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']","- **dbt_utils**: This package offers a collection of reusable macros that streamline common dbt tasks, enhancing productivity. It simplifies operations such as column selection, testing, and data transformations, allowing users to focus on building robust data models without reinventing the wheel.
+",False,False,False,"['dbt-labs/dbt_utils==1.1.1', 'calogica/dbt_date==0.10.0', 'https://github.com/dbt-labs/dbt-audit-helper.git@main']","- **dbt_utils**: This package offers a collection of reusable macros that streamline common dbt tasks, enhancing efficiency in data transformations, testing, and column selection. It empowers users to write cleaner, more maintainable code, ultimately improving project productivity.
 
-- **dbt_date**: Designed to assist with date-related transformations, this package provides macros that simplify calculations and formatting. It enhances time series analysis by making it easier to manipulate and analyze date fields, ensuring accurate reporting and insights.
+- **dbt_date**: Designed for date manipulation, this package simplifies date-related transformations and calculations. It provides essential functions for handling time series data, enabling users to perform complex date operations with ease and accuracy.
 
-- **dbt_audit_helper**: This package aids in maintaining data quality by generating SQL scripts for comprehensive data validation and testing. It empowers users to conduct audits efficiently, ensuring that data integrity is upheld throughout the dbt project lifecycle."
+- **dbt_audit_helper**: This package aids in maintaining data integrity by generating SQL scripts for comprehensive data quality audits. It allows users to implement robust validation checks, ensuring that data meets specified standards and enhancing overall trust in data outputs."
 macros/cents_to_dollars.sql,cents_to_dollars.sql,.sql,"{# A basic example for a project-wide macro to cast a column uniformly #}
  {% macro cents_to_dollars(column_name) -%} {{ return(adapter.dispatch('cents_to_dollars')(column_name)) }} {%- endmacro %} {% macro default__cents_to_dollars(column_name) -%} ({{ column_name }} / 100)::numeric(16, 2) {%- endmacro %} {% macro postgres__cents_to_dollars(column_name) -%} ({{ column_name }}::numeric(16, 2) / 100) {%- endmacro %} {% macro bigquery__cents_to_dollars(column_name) %} round(cast(({{ column_name }} / 100) as numeric), 2) {% endmacro %} {% macro fabric__cents_to_dollars(column_name) %} cast({{ column_name }} / 100 as numeric(16, 2)) {% endmacro %}",False,True,False,,"Converts a specified column from cents to dollars uniformly across different database adapters. 
 
-- Default implementation: Divides the column by 100 and casts to numeric(16, 2).
-- Postgres: Similar to default but includes explicit casting.
-- BigQuery: Rounds the result after casting.
-- Fabric: Casts the division result to numeric(16, 2)."
+- **Default Implementation**: Divides the column by 100 and casts to numeric(16, 2).
+- **Postgres**: Similar to default but includes explicit casting.
+- **BigQuery**: Rounds the result after casting.
+- **Fabric**: Casts the division result to numeric(16, 2)."
 macros/generate_schema_name.sql,generate_schema_name.sql,.sql,"{% macro generate_schema_name(custom_schema_name, node) %} {%
 set default_schema = target.schema %} {# seeds go in a global `raw` schema #}
  {% if node.resource_type == 'seed' %} {{ custom_schema_name | trim }} {# non-specified schemas go to the default target schema #}
