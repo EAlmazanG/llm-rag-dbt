@@ -118,7 +118,7 @@ def move_snapshots_to_models(dbt_project_df, dbt_models_df):
 
     return dbt_project_df, dbt_models_df
 
-def extract_model_file_content(path, is_online=False, repo_base_url=None):
+def extract_model_file_content(path, is_online, repo_base_url):
     try:
         if is_online:
             # Build complete URL
@@ -130,7 +130,9 @@ def extract_model_file_content(path, is_online=False, repo_base_url=None):
                 return f"Error: {response.status_code} {response.reason}"
         else:
             # Read content locally
-            with open(path, 'r', encoding='utf-8') as file:
+            open_path = repo_base_url.rstrip('/') + '/' + path
+
+            with open(open_path, 'r', encoding='utf-8') as file:
                 content = file.read()
 
         # Process content based on file type
@@ -150,11 +152,11 @@ def extract_model_file_content(path, is_online=False, repo_base_url=None):
     except Exception as e:
         return f"Error: {e}"
 
-def add_model_code_column(df, is_online=False, repo_url=None):
+def add_model_code_column(df, is_online, repo_url):
     if is_online:
         repo_base_url = get_base_url(repo_url)
     else:
-        repo_base_url = ''
+        repo_base_url = repo_url
 
     # Extract content for each file and process it based on type
     df['sql_code'] = df['path'].apply(lambda path: extract_model_file_content(path, is_online, repo_base_url))
@@ -728,7 +730,7 @@ def generate_knowledge_from_repo_elements(repo_elements, is_online, repo_path):
     dbt_project_df = select_dbt_project_files(repo_dbt_elements)
     dbt_models_df = generate_dbt_models_df(repo_dbt_models)
     dbt_project_df, dbt_models_df = move_snapshots_to_models(dbt_project_df, dbt_models_df)
-    dbt_models_df = add_model_code_column(dbt_models_df, True, repo_path)
+    dbt_models_df = add_model_code_column(dbt_models_df, is_online, repo_path)
     dbt_models_df = add_config_column(dbt_models_df)
     dbt_models_df['materialized'] = dbt_models_df['config'].apply(extract_materialized_value)
     dbt_models_df['is_snapshot'] = dbt_models_df['config'].apply(check_is_snapshot)
