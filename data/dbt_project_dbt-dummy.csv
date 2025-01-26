@@ -52,13 +52,11 @@ clean-targets:
 - Seed Paths: seeds
 - Macro Paths: macros
 - Snapshot Paths: snapshots
-- Clean Targets: 
-  - target
-  - dbt_packages"
+- Clean Targets: target, dbt_packages"
 dbt_project/packages.yml,packages.yml,.yml,"packages:
 - package: dbt-labs/dbt_utils
   version: 1.0.0
-",False,False,False,['dbt-labs/dbt_utils==1.0.0'],"- **dbt_utils**: This package offers a collection of utility macros designed to streamline common tasks in dbt projects. It enhances productivity by providing functions for column selection, testing, and data transformations, allowing users to write cleaner and more efficient SQL code. By leveraging these utilities, teams can focus on building robust data models while ensuring consistency and best practices across their dbt workflows."
+",False,False,False,['dbt-labs/dbt_utils==1.0.0'],"- **dbt_utils**: This package offers a collection of utility macros designed to streamline common tasks in dbt projects. It enhances productivity by providing functions for column selection, testing, and transformations, allowing users to write cleaner and more efficient SQL code. By leveraging these utilities, teams can improve their workflow and maintain consistency across their dbt models."
 dbt_project/seeds/_seeds.yml,_seeds.yml,.yml,"version: 2
 seeds:
 - name: customer_base

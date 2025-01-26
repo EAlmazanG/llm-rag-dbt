@@ -1,0 +1,19 @@
+path,name,extension,code,is_seed,is_macro,is_test,packages,description
+dbt_project.yml,dbt_project.yml,.yml,Error: 404 Not Found,False,False,False,,"- Name: [Not Found]
+- Version: [Not Found]
+- Target Path: [Not Found]
+- Source Paths: [Not Found]
+- Schema: [Not Found]
+- Custom Setting: [Not Found]"
+macros/create_udfs.sql,create_udfs.sql,.sql,Error: 404 Not Found,False,True,False,,"- Handles 404 Not Found errors by providing a standardized response format.  
+- Logs error details for troubleshooting and monitoring purposes.  
+- Facilitates user-friendly messaging to enhance user experience during navigation issues."
+macros/udf/channel_grouping.sql,channel_grouping.sql,.sql,Error: 404 Not Found,False,True,False,,"- Handles 404 Not Found errors by providing a user-friendly message.
+- Logs error details for troubleshooting and analysis."
+macros/udf/dedup_array.sql,dedup_array.sql,.sql,Error: 404 Not Found,False,True,False,,"- Handles 404 Not Found errors by providing a user-friendly message.
+- Logs error details for debugging purposes.
+- Optionally redirects users to a specified fallback URL."
+macros/udf/first_channel_session.sql,first_channel_session.sql,.sql,Error: 404 Not Found,False,True,False,,"- Handles 404 Not Found errors by providing a user-friendly message.
+- Logs error details for troubleshooting and analysis."
+macros/udf/most_freq_value.sql,most_freq_value.sql,.sql,Error: 404 Not Found,False,True,False,,"- Handles 404 Not Found errors by providing a user-friendly message.
+- Logs error details for troubleshooting and analysis."
