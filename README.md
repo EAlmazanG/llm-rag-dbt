@@ -1,6 +1,6 @@
 # llm-rag-dbt
 
-![chat example](img/chat_example.png)
+![chat example](img/chat_example.gif)
 
 ## Overview
 This project provides a Retrieval-Augmented Generation (RAG) system designed to enhance LLM agents' understanding of dbt project structures. It retrieves context on models, dependencies, and documentation, allowing agents to generate, refine, and modify code step-by-step with project-specific accuracy. This approach minimizes hallucinations and improves responses by leveraging the full context of the repository.
@@ -124,7 +124,7 @@ Once the dbt repository is obtained, whether from a local path or an online sour
 
 Once the data has been cleaned and structured, the next step involves analyzing relationships, dependencies, and generating meaningful insights for the RAG system. 
 
-![dbt lineage example](img/dbt_lineage_example.png)
+![dbt lineage example](img/lineage_example.png)
 
 #### 1. Relationship
 - Extract relationships between models by analyzing `ref()` and `source()` functions within SQL code.
@@ -230,6 +230,8 @@ The Streamlit interface provides an intuitive way to interact with the RAG syste
    streamlit run src/interface_app.py
 ```
 
+![init chat](img/init_chat.png)
+
 2. **Load Repo Options**  
 The interface allows users to select how they want to load their dbt project repository. There are three options available in the sidebar:
 
@@ -242,6 +244,8 @@ The interface allows users to select how they want to load their dbt project rep
 
 After selecting an option and providing the necessary inputs, clicking the **"Load Repo"** button will process the repository and prepare it for further analysis.
 
+![init chat](img/options.gif)
+
 3. **Load LLM Options**  
 Once the repository is loaded successfully, the interface provides options to select and configure the Language Model (LLM). Two primary LLM options are available:
 - **OpenAI Models:**  
@@ -251,6 +255,7 @@ Once the repository is loaded successfully, the interface provides options to se
 
 After choosing the preferred model, clicking the **"Load LLM"** button initializes the agent flow for processing requests.
 
+![chat example](img/chat.png)
 
 4. **Chat Interface**  
 The chat interface is the primary way to interact with the loaded dbt project. It consists of:
@@ -273,6 +278,4 @@ Please note that the **average inference time is around one minute**, but it can
 - The number of interactions required between multiple agents and the LLM to construct a comprehensive response.  
 For optimal performance, consider using a high-performance LLM model and a well-structured dbt repository.
 
-![chat example](img/options_example.png)
-
-![chat example](img/chat_example.png)
+![chat example](img/chat_example.gif)
