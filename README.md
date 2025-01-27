@@ -161,7 +161,7 @@ The final processed data is formatted into structured documents containing enric
 
 Once the data has been cleaned and analyzed, an LLM agent flow is configured to handle requests related to the dbt project. The flow utilizes CrewAI to coordinate multiple agents, each responsible for specific tasks such as retrieving context, analyzing relationships, and generating insights or code suggestions.
 
-![Tab1 of the dashboard](img/agents_flow.png)
+![Agents Flow](img/agents_flow.png)
 
 #### 1. Flow Initialization
 The flow starts by loading agent and task configurations from YAML files. These configurations define the roles and responsibilities of each agent, ensuring they align with the project requirements. Agents include:
@@ -212,22 +212,47 @@ After the necessary processing, the final output (either an information report o
 
 This structured agent flow ensures that every step of the process is handled efficiently, leveraging the full context of the dbt project while minimizing errors and improving response quality.
 
+### Streamlit Interface and Tool Use
 
-### Tool use
+The Streamlit interface provides an intuitive way to interact with the RAG system for dbt projects, allowing users to load repositories, configure language models, and interact with the agent flow in a chat-like environment.
 
-
-
-2. **Running the App**: To start the application, run the following command in your terminal, navigating to your project’s root directory.
+1. **Running the App**  
+   To start the application, run the following command in your terminal, navigating to your project’s root directory:
 
 ```bash
-streamlit run app/app.py
+   streamlit run src/interface_app.py
 ```
 
-3. **Data Loading**: 
+2. **Load Repo Options**  
+The interface allows users to select how they want to load their dbt project repository. There are three options available in the sidebar:
 
-4. **Interactivity**: 
+- **Local:**  
+  Users can provide the local path to their dbt project folder. The system will recursively analyze and extract information from the project structure.
+- **Online:**  
+  Users can enter the URL of a public GitHub repository containing their dbt project. The app will fetch the necessary files and analyze them remotely.
+- **Already Used:**  
+  If a project has been processed previously, users can upload pre-processed `.csv` files containing the knowledge extracted from the dbt project. This option speeds up the workflow by avoiding repeated processing.
+
+After selecting an option and providing the necessary inputs, clicking the **"Load Repo"** button will process the repository and prepare it for further analysis.
+
+3. **Load LLM Options**  
+Once the repository is loaded successfully, the interface provides options to select and configure the Language Model (LLM). Two primary LLM options are available:
+- **OpenAI Models:**  
+  Users can select from predefined models such as `gpt-4o-mini` or `gpt-4o`. These models provide cloud-based AI capabilities for processing and generating responses.
+- **Local LLM with LM Studio:**  
+  If users have a local LLM instance running on their machine via LM Studio, the app detects available models from the local API and allows selection.
+
+After choosing the preferred model, clicking the **"Load LLM"** button initializes the agent flow for processing requests.
 
 
+4. **Chat Interface**  
+The chat interface is the primary way to interact with the loaded dbt project. It consists of:
 
-
-![Tab1 of the dashboard](img/sar_tab1.gif)
+- **Input Field:**  
+  Users can type questions related to their dbt project, such as "What does the customer_orders model do?" or "What are the dependencies of the sales model?"
+- **Response Display:**  
+  Responses from the LLM agents appear in a structured format, providing insights, dependencies, and explanations about the dbt models and macros.
+- **Conversation History:**  
+  Previous interactions are stored within the session, allowing users to track their queries and responses over time.
+- **Clear Chat Button:**  
+  Users can reset the conversation at any time by clicking the clear chat button to start fresh.
