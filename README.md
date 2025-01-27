@@ -157,7 +157,60 @@ Once the data has been cleaned and structured, the next step involves analyzing 
 
 The final processed data is formatted into structured documents containing enriched information, making it easier to query and retrieve insights efficiently. This data is divided into meaningful chunks, preparing it for storage in the vector database (ChromaDB) for the RAG system.
 
-### LLM Agents flow
+### LLM Agents Flow
+
+Once the data has been cleaned and analyzed, an LLM agent flow is configured to handle requests related to the dbt project. The flow utilizes CrewAI to coordinate multiple agents, each responsible for specific tasks such as retrieving context, analyzing relationships, and generating insights or code suggestions.
+
+![Tab1 of the dashboard](img/agents_flow.png)
+
+#### 1. Flow Initialization
+The flow starts by loading agent and task configurations from YAML files. These configurations define the roles and responsibilities of each agent, ensuring they align with the project requirements. Agents include:
+
+- **Check Model Agent:** Analyzes the requested model to understand its dependencies and usage.
+- **Search Model Agent:** Locates relevant models related to the user's request.
+- **Interpretation Agent:** Interprets the user prompt to determine the appropriate action.
+- **Solution Design Agent:** Generates solutions based on the identified dependencies and context.
+- **Conciliation and Testing Agent:** Validates the proposed solution to ensure alignment with project goals.
+
+#### 2. Task Execution Flow
+The agent flow follows a structured pipeline where each agent processes and refines the request iteratively. The sequence of tasks includes:
+
+1. **Model Identification:**  
+   - The `check_model_agent` analyzes the lineage of the requested model.
+   - The identified models and their dependencies are retrieved from the vector database (ChromaDB).
+
+2. **Context Retrieval:**  
+   - Using the vector store, relevant documentation and code snippets related to the identified models are fetched.
+   - Upstream and downstream models are identified to ensure complete impact analysis.
+
+3. **Prompt Interpretation:**  
+   - The interpretation agent decides whether the request is related to retrieving information or generating new code.
+
+4. **Information Generation:**  
+   - If information is requested, the agent compiles documentation and generates a report.
+   - If code changes are needed, further agents analyze the impact and design the required modifications.
+
+5. **Solution Design and Testing:**  
+   - Based on the gathered context, the solution design agent proposes changes.
+   - The conciliation agent tests the proposed changes against project constraints and dependencies.
+
+#### 3. Interaction with the Vector Store
+A key component of the flow is the integration with ChromaDB, which stores processed information in a structured format. The flow interacts with the database to:
+
+- Retrieve documents related to the queried model.
+- Analyze lineage to determine affected models.
+- Provide additional context to the agents for informed decision-making.
+
+#### 4. Routing and Decision Making
+The flow utilizes dynamic routing to determine the appropriate response path based on user intent. For instance:
+
+- If the request pertains to retrieving insights, the system compiles reports.
+- If modifications are needed, the system triggers a series of tasks to suggest, validate, and refine the changes.
+
+#### 5. Finalizing Results
+After the necessary processing, the final output (either an information report or code suggestions) is compiled and presented to the user in an accessible format via a Streamlit interface.
+
+This structured agent flow ensures that every step of the process is handled efficiently, leveraging the full context of the dbt project while minimizing errors and improving response quality.
 
 
 ### Tool use
