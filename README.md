@@ -253,6 +253,23 @@ Once the repository is loaded successfully, the interface provides options to se
 - **Local LLM with LM Studio:**  
   If users have a local LLM instance running on their machine via LM Studio, the app detects available models from the local API and allows selection.
 
+#### How to Set Up LM Studio for Local LLM  
+If you prefer to run the LLM locally, follow these simple steps to set up LM Studio:
+
+1. **Download and Install LM Studio:**  
+   - Visit [LM Studio](https://lmstudio.ai/) and download the installer for your operating system.  
+   - Follow the installation instructions to set it up on your machine.
+
+2. **Download a Model:**  
+   - Open LM Studio and navigate to the **Models** section.  
+   - Search for a model (e.g., `LLaMA`, `Mistral`, `Mixtral`) and click **Download**.  
+   - Ensure the model is compatible with your hardware capabilities.
+
+3. **Run LM Studio in Server Mode:**  
+   - Once the model is downloaded, go to the **Server** tab in LM Studio.  
+   - Click **Start Server**, and ensure it is running on `http://127.0.0.1:1234`.  
+   - The app will automatically detect available models when selecting "Local LLM" in the interface.
+
 After choosing the preferred model, clicking the **"Load LLM"** button initializes the agent flow for processing requests.
 
 ![chat example](img/chat.png)
