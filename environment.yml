@@ -1,0 +1,8 @@
+name: rag-env
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - ipykernel
+  - yaml
+prefix: /Users/jobandtalent/opt/anaconda3/envs/rag-env
