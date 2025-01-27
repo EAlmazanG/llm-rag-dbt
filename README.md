@@ -1,5 +1,7 @@
 # llm-rag-dbt
 
+![chat example](img/chat_example.png)
+
 ## Overview
 This project provides a Retrieval-Augmented Generation (RAG) system designed to enhance LLM agents' understanding of dbt project structures. It retrieves context on models, dependencies, and documentation, allowing agents to generate, refine, and modify code step-by-step with project-specific accuracy. This approach minimizes hallucinations and improves responses by leveraging the full context of the repository.
 
@@ -68,6 +70,9 @@ llm-rag-dbt/
 ```
 
 ## Phases of the project
+
+![dbt lineage example](img/complete_flow.png)
+
 ### Data Collection
 
 We will select a repository from a dbt project, to process and clean up the structure and content of the repository, and use it as a knowledge base to give context to our LLM when making requests from the interface.
@@ -118,6 +123,8 @@ Once the dbt repository is obtained, whether from a local path or an online sour
 ### Data Analysis
 
 Once the data has been cleaned and structured, the next step involves analyzing relationships, dependencies, and generating meaningful insights for the RAG system. 
+
+![dbt lineage example](img/dbt_lineage_example.png)
 
 #### 1. Relationship
 - Extract relationships between models by analyzing `ref()` and `source()` functions within SQL code.
@@ -265,3 +272,7 @@ Please note that the **average inference time is around one minute**, but it can
 - The size and structure of the dbt repository being analyzed.  
 - The number of interactions required between multiple agents and the LLM to construct a comprehensive response.  
 For optimal performance, consider using a high-performance LLM model and a well-structured dbt repository.
+
+![chat example](img/options_example.png)
+
+![chat example](img/chat_example.png)
