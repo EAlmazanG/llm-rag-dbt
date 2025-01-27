@@ -8,8 +8,14 @@ Managing and modifying dbt projects can be challenging due to their complexity a
 
 ## Technologies
 
-
-- **streamlit**: Displays the results in an accessible and interactive dashboard.
+- **Python**: Core language used for processing and orchestrating the system.
+- **dbt**: Framework for managing and transforming data in warehouses. We will use a dbt repo as knowledge source.
+- **ChromaDB**: Efficient vector database for storing and retrieving document embeddings.
+- **CrewAI**: Framework for structuring multi-agent AI workflows.
+- **LangChain**: Provides integration and chaining capabilities for LLM interactions.
+- **LM Studio**: 
+- **LLM Models**:
+- **streamlit**: Displays the interface of the tool and the interactions made with the Agents Flow.
 
 ## Project Phases
 
@@ -18,16 +24,57 @@ Managing and modifying dbt projects can be challenging due to their complexity a
 
 ```bash
 
+llm-rag-dbt/
+│
+├── chromadb/                     # ChromaDB storage
+├── config/                       # Configuration files
+│   ├── agents.yml                 # Agent definitions and roles
+│   └── tasks.yml                  # Task definitions for agent workflow
+│
+├── data/                          # Sample and processed data
+│
+├── notebooks/                     # Jupyter notebooks for development and testing
+│   ├── create_rag_db.ipynb         # Notebook to generate the RAG database
+│   ├── generate_knowledge.ipynb    # Notebook for extracting insights
+│   ├── interface_design.ipynb      # UI/UX design for interaction
+│   ├── llm_agents_tests.ipynb      # Agent behavior and response validation
+│   └── llm_chain_tests.ipynb       # Testing the multi-agent workflow
+│
+├── src/                          # Source code
+│   ├── create_rag_db.py           # Scripts to generate RAG database
+│   ├── enhanced_retriever.py      # Improved retriever class
+│   ├── generate_knowledge.py      # Knowledge extraction scripts
+│   ├── interface_app.py           # Streamlit app interface
+│   ├── llm_agents_flow.py         # Agent orchestration logic
+│   ├── llm_chain.py               # Chaining of agents and context handling
+│   └── llm_chain_tools.py         # Utility functions for LLM chain operations
+│
+├── test_repo/                     # Sample dbt project for testing
+├── img/                           # Images and GIFs for README
+│
+├── requirements.txt             # Dependencies (pandas, scikit-learn, scrapy, etc.)
+├── environment.yml              # Conda environment configuration
+├── openai_setup.yml             # Keys for co (dont sync it in your repo!)
+├── .gitignore                   # Ignore unnecessary files
+└── README.md     
 
 ```
 
 ## Phases of the project
 ### Data Collection
 
+We will select a repository from a dbt project, to process and clean up the structure and content of the repository, and use it as a knowledge base to give context to our LLM when making requests from the interface.
+
+> **‼️👀🚨 IMPORTANT 🚨👀‼️**: The dbt project must be structure following the dbt best practices. If the models folder or project main files are not set as expected, the python script could not read them properly, so the context of this files wouldn't be added to the RAG context. Adapt the code if your repo structure differs.
 
 #### Data Source Options
 
+- **Local repository**: Select the path to the local repository you want to process. The test_repo folder contains an example using jaffle-shop, from dbt labs.
+- **Online repository**: Enter the url of the repository to read, the scrit will read the structure and content automatically using the GitHub api and the requests library.
+- **Already processed repository**: If you have already used a repository before, load it directly by selecting the corresponding dbt_models_knowledge file that will have been created in the data folder, in order to reuse the already processed data and speed up the process.
+
 ### Data Cleaning
+
 
 ### Data Analysis
 
