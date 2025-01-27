@@ -13,11 +13,18 @@ Managing and modifying dbt projects can be challenging due to their complexity a
 - **ChromaDB**: Efficient vector database for storing and retrieving document embeddings.
 - **CrewAI**: Framework for structuring multi-agent AI workflows.
 - **LangChain**: Provides integration and chaining capabilities for LLM interactions.
-- **LM Studio**: 
-- **LLM Models**:
+- **LM Studio**: Used to run and support local LLM models.
+- **LLM Models**: Configured to use the models available in the Open aI APi (mainly gpt-4o and gpt4o-mini) and local models (tested with DeepSeek R1 Q4_K_M, Qwen2.5 Coder 7B Instruct Q4_K_M and Llama 3.2 3B Instriuct 4bit).
 - **streamlit**: Displays the interface of the tool and the interactions made with the Agents Flow.
 
 ## Project Phases
+
+1. **Data Collection**: Extract information from a repository that can be either online or local.
+2. **Data Cleaning**: Format and clean the repository content, its structure, and the code/documentation of all models, macros, project files, snapshots, etc.
+3. **Data Analysis**: Analyze relationships between models in the dbt project and add them to the processed information. Generate textual descriptions of the code, macros, models, and project to provide an easily interpretable source for the RAG system. Format all data into a document containing all necessary information for each model for later storage in a vector database.
+4. **Data Storage**: Process the formatted documents by dividing them into chunks and storing them in ChromaDB, which will serve as the database for the RAG system.
+5. **LLM Agents Flow**: Configure an agent flow using CrewAI, where agents analyze and process requests step-by-step, querying the RAG for the necessary information at each stage.
+6. **Tool and Visualization**: Implement an interface in Streamlit to enable easy interaction with all functionalities, formatting input and output from the agent flow as a chat interface.
 
 
 ## Folder Structure
