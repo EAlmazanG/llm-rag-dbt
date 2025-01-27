@@ -82,18 +82,53 @@ We will select a repository from a dbt project, to process and clean up the stru
 
 ### Data Cleaning
 
+Once the dbt repository is obtained, whether from a local path or an online source, the next step is cleaning and structuring the content. The project begins by identifying all relevant files within the repository, such as models, macros, snapshots, and documentation. This process ensures that only meaningful elements are processed.
+
+#### 1. Repository Structure Analysis
+- The repository's file structure is listed recursively, distinguishing between different file types such as `.sql`, `.yml`, `.csv`, and excluding irrelevant files.
+- If the repository is hosted online (e.g., GitHub), the GitHub API is used to dynamically extract the file list.
+
+#### 2. Filtering dbt Elements
+- Specific dbt-related files are filtered using predefined extensions.
+- Files within the `models/` directory are categorized separately from other project-level files.
+
+#### 3. Model Dataframe Creation
+- A structured DataFrame is built to store metadata about each model, including file paths, extensions, and names.
+- Snapshot models are moved to the model section to align with dbt's internal categorization.
+
+#### 4. Content Extraction
+- Each relevant file is read and processed based on its type:
+  - **SQL files** are formatted and analyzed for key components such as Jinja templates, materialization strategies, and dependencies.
+  - **YAML files** are parsed to extract metadata, descriptions, and tests.
+  - **CSV files** are cleaned and standardized to ensure compatibility with dbt's expectations.
+
+#### 5. Configuration Parsing
+- SQL models are examined for `config()` blocks to identify materialization settings and snapshot strategies.
+- Jinja macros within the models are identified and categorized.
+
+#### 6. Metadata Enhancement
+- Relationships between models are analyzed by identifying dependencies using `ref()` and `source()` functions.
+- Models are categorized based on naming conventions (e.g., `base`, `stg`, `int`).
+- Columns, tests, and other metadata extracted from YAML files are matched with corresponding models.
+
+#### 7. Project-level Details
+- The `dbt_project.yml` and other project configuration files are parsed to extract global settings, package dependencies, and custom configurations.
+- Packages are documented and their purposes summarized.
 
 ### Data Analysis
 
+Once the data has been cleaned and structured, the next step involves analyzing relationships, dependencies, and generating meaningful insights for the RAG system. 
 
+#### 1. Relationship
+- Extract relationships between models by analyzing `ref()` and `source()` functions within SQL code.
+- Identify parent-child relationships between models to better understand project dependencies.
 
-#### Using the GPT API
-
-The **GPT API** is integrated into this project to enable 
-
-
-#### Purpose of the GPT API
-
+#### 2. Generating Descriptions with LLM
+- A language model (GPT-4o) is used to generate concise, human-readable descriptions of each model, macro, and project configuration.
+- The descriptions summarize key aspects such as:
+  - **Purpose:** What the model/macro is designed to do.
+  - **Dependencies:** Which tables or models it interacts with.
+  - **Filters/Aggregations:** Any key transformations performed within the model.
 
 #### Setup Instructions
 1. **API Key**: To enable the GPT functionality, you'll need an API key from OpenAI. If you haven’t done so already, sign up for an API key at [OpenAI's website](https://platform.openai.com/signup).
@@ -114,9 +149,13 @@ The **GPT API** is integrated into this project to enable
 - **Data Privacy:** Be mindful that enabling the GPT API may send review text to OpenAI’s servers. Consider reviewing OpenAI’s data usage policy to understand how your data is handled.
 - **API Costs:** Since the GPT API is a paid service, usage may incur costs. Track your usage on the OpenAI dashboard to manage API expenses.
 
+#### 3. Jinja Code
+- The LLM is leveraged to analyze Jinja code within SQL models and macros.
+- The extracted Jinja blocks are explained with details on their functionality and impact on the transformation logic.
 
 ### Data Storage
 
+The final processed data is formatted into structured documents containing enriched information, making it easier to query and retrieve insights efficiently. This data is divided into meaningful chunks, preparing it for storage in the vector database (ChromaDB) for the RAG system.
 
 ### LLM Agents flow
 
